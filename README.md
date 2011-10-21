@@ -133,9 +133,15 @@ Video jobs have the `type` key set to `image`. The key `params` must be set to a
   * `format`: Either `jpeg`, `png` or `gif`.
   * `quality`: A quality value between 0.0 and 1.0 which will be translated to a compression level depending on the output coding. The default is 1.0.
   * `strip_metadata`: If true, metadata such as EXIF and IPTC will be deleted. For thumbnails, this often reduces the file size considerably.
+  * `medium`: If `web`, the image will be optimized for web usage. See below for details.
   * `content_type`: Content type of resultant file. The system will be able to guess basic types such as `image/jpeg`.
 
 Note that scaling always preserves the aspect ratio of the original image; in other words, if the original is 100 x 200, then passing the dimensions 100x100 will produce an image that is 50x100.
+
+If the option `medium` specifies `web`, the following additional transformations will be performed:
+
+* The image will be automatically rotated based on EXIF orientation metadata, since web browsers don't do this.
+* CMYK images will be converted to RGB, since most web browsers don't seem to display CMYK correctly.
 
 Completion notification provides the following data:
 

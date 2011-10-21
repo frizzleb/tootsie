@@ -53,6 +53,9 @@ module Tootsie
                 result[:height] = original_height
                 result[:depth] = original_depth
                 
+                medium = version_options[:medium]
+                medium &&= medium.to_sym
+
                 new_width, new_height = version_options[:width], version_options[:height]
                 if new_width
                   new_height ||= (new_width * original_aspect).ceil
@@ -114,6 +117,16 @@ module Tootsie
                 # corrupting it in the process.
                 if original_type =~ /(?:Gray|RGB)(Matte)?$/
                   convert_command << " -type TrueColor#{$1}"
+                end
+
+                # Fix CMYK images
+                if medium == :web and original_type =~ /CMYK$/
+                  convert_command << " -colorspace rgb"
+                end
+
+                # Auto-orient images when web or we're stripping EXIF
+                if medium == :web or version_options[:strip_metadata]
+                  convert_command << " -auto-orient"
                 end
 
                 convert_command << " :input_file :output_file"
