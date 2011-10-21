@@ -34,10 +34,14 @@ module Tootsie
               begin
                 result[:metadata] ||= ImageMetadataExtractor.new.extract_from_file(input.file_name)
                 
-                original_depth, original_width, original_height = nil, nil
-                CommandRunner.new("identify -format '%z %w %h' :file").run(:file => input.file_name) do |line|
-                  if line =~ /(\d+) (\d+) (\d+)/
+                original_depth = nil
+                original_width = nil
+                original_height = nil
+                original_type = nil
+                CommandRunner.new("identify -format '%z %w %h %r' :file").run(:file => input.file_name) do |line|
+                  if line =~ /(\d+) (\d+) (\d+) ([^\s]+)/
                     original_depth, original_width, original_height = $~[1, 3].map(&:to_i)
+                    original_type = $4
                   end
                 end
                 unless original_width and original_height
@@ -103,7 +107,15 @@ module Tootsie
                 end
 
                 convert_command << " -quality #{((version_options[:quality] || 1.0) * 100).ceil}%"
-                
+
+                # Work around a problem with ImageMagick being too clever and "optimizing"
+                # the bit depth of RGB images that contain a single grayscale channel.
+                # Coincidentally, this avoids ImageMagick rewriting the ICC data and
+                # corrupting it in the process.
+                if original_type =~ /(?:Gray|RGB)(Matte)?$/
+                  convert_command << " -type TrueColor#{$1}"
+                end
+
                 convert_command << " :input_file :output_file"
                 CommandRunner.new(convert_command).run(convert_options)
                 
