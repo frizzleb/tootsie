@@ -106,7 +106,7 @@ module Tootsie
                 end
                 if version_options[:strip_metadata]
                   convert_command << " +profile :remove_profiles -set comment ''"
-                  convert_options[:remove_profiles] = "8bim,iptc,xmp,exif,icc"
+                  convert_options[:remove_profiles] = "8bim,iptc,xmp,exif"
                 end
 
                 convert_command << " -quality #{((version_options[:quality] || 1.0) * 100).ceil}%"
