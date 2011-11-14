@@ -38,10 +38,12 @@ module Tootsie
                 original_width = nil
                 original_height = nil
                 original_type = nil
-                CommandRunner.new("identify -format '%z %w %h %r' :file").run(:file => input.file_name) do |line|
-                  if line =~ /(\d+) (\d+) (\d+) ([^\s]+)/
+                original_format = nil
+                CommandRunner.new("identify -format '%z %w %h %r %m' :file").run(:file => input.file_name) do |line|
+                  if line =~ /(\d+) (\d+) (\d+) ([^\s]+) ([^\s]+)/
                     original_depth, original_width, original_height = $~[1, 3].map(&:to_i)
                     original_type = $4
+                    original_format = $5.downcase
                   end
                 end
                 unless original_width and original_height
@@ -115,7 +117,7 @@ module Tootsie
                 # the bit depth of RGB images that contain a single grayscale channel.
                 # Coincidentally, this avoids ImageMagick rewriting the ICC data and
                 # corrupting it in the process.
-                if original_type =~ /(?:Gray|RGB)(Matte)?$/
+                if original_type =~ /(?:Gray|RGB)(Matte)?$/ and original_format != 'png'
                   convert_command << " -type TrueColor#{$1}"
                 end
 
