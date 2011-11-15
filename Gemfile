@@ -12,5 +12,8 @@ gem 's3'
 gem 'sqs'
 
 group :test do
-  gem 'rspec', '~> 2.4.0'
+  gem 'rspec', '~> 2.7.0'
+  gem 'simplecov-rcov'
+  gem 'rake'
+  gem 'rspec-extra-formatters'
 end

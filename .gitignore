@@ -9,3 +9,5 @@
 .rvmrc
 *.sublime-project
 *.sublime-workspace
+.rspec
+/coverage
