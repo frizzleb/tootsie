@@ -25,7 +25,7 @@ module Tootsie
         when /^file:(.*)/
           FileUtils.cp(@temp_file.path, $1)
         when /^s3:.*/
-          s3_options = S3.parse_uri(@url)
+          s3_options = S3Utilities.parse_uri(@url)
           bucket_name, path = s3_options[:bucket], s3_options[:key]
           File.open(@temp_file.path, 'r') do |file|
             s3_service = Tootsie::Application.get.s3_service

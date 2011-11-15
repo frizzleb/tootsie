@@ -1,6 +1,6 @@
 module Tootsie
   
-  module S3
+  module S3Utilities
     
     class << self
       def parse_uri(url)
