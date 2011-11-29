@@ -39,16 +39,25 @@ module Tootsie
                 original_height = nil
                 original_type = nil
                 original_format = nil
-                CommandRunner.new("identify -format '%z %w %h %r %m' :file").run(:file => input.file_name) do |line|
-                  if line =~ /(\d+) (\d+) (\d+) ([^\s]+) ([^\s]+)/
+                original_orientation = nil
+                CommandRunner.new("identify -format '%z %w %h %r %m %[EXIF:Orientation]' :file").
+                  run(:file => input.file_name) do |line|
+                  if line =~ /(\d+) (\d+) (\d+) ([^\s]+) ([^\s]+) (\d+)?/
                     original_depth, original_width, original_height = $~[1, 3].map(&:to_i)
                     original_type = $4
                     original_format = $5.downcase
+                    original_orientation = $6.try(:to_i)
                   end
                 end
                 unless original_width and original_height
                   raise "Unable to determine dimensions of input image"
                 end
+
+                # Correct for EXIF orientation
+                if [5, 6, 7, 8].include?(original_orientation)
+                  original_width, original_height = original_height, original_width
+                end
+
                 original_aspect = original_height / original_width.to_f
 
                 result[:width] = original_width
