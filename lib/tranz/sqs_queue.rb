@@ -56,7 +56,7 @@ module Tranz
       loop do
         begin
           message = @queue.message(5)
-        rescue SystemExit, Interrupt
+        rescue SystemExit
           raise
         rescue Exception => exception
           @logger.error("Reading queue failed with exception #{exception.class}: #{exception.message}")
