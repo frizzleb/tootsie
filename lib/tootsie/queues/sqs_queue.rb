@@ -37,9 +37,8 @@ module Tootsie
       retries_left = 5
       begin
         return @queue.create_message(item.to_json)
-      rescue SystemExit, Interrupt
-        raise
       rescue Exception => exception
+        check_exception(exception)
         if retries_left > 0
           @logger.warn("Writing queue failed with exception (#{exception.message}), will retry")
           retries_left -= 1
@@ -57,9 +56,8 @@ module Tootsie
       loop do
         begin
           message = @queue.message(5)
-        rescue SystemExit, Interrupt
-          raise
         rescue Exception => exception
+          check_exception(exception)
           @logger.error("Reading queue failed with exception #{exception.class}: #{exception.message}")
           break unless options[:wait]
           sleep(0.5)
@@ -82,6 +80,13 @@ module Tootsie
       end
       item
     end
+
+    private
+
+      def check_exception(exception)
+        raise exception if exception.is_a?(SystemExit)
+        raise exception if exception.is_a?(SignalException) and not exception.is_a?(Timeout::Error)
+      end
     
   end
   
