@@ -43,7 +43,11 @@ module Tranz
         message = message.merge(:signature => Client.generate_signature(self.access_key)) if self.access_key
         message = message.stringify_keys
         Application.get.logger.info "Notifying #{notification_url} with message: #{message.inspect}"
-        HTTPClient.new.post(notification_url, message)
+        begin
+          HTTPClient.new.post(notification_url, message)
+        rescue Exception => e
+          Application.get.logger.info "Could not notify #{notification_url}: #{e.class}: #{e}"
+        end
       end
     end
     
