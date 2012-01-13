@@ -8,7 +8,7 @@ Tootsie has the following external dependencies:
 * FFmpeg for transcoding of video and audio.
 * ImageMagick/GraphicsMagick for image conversion.
 * Amazon S3 for loading and storage of files (optional).
-* Amazon Simple Queue Service for internal job queue management (optional).
+* Amazon Simple Queue Service for internal task queue management (optional).
 
 Overview
 --------
@@ -26,7 +26,7 @@ The framework is designed to be easily pluggable, and to let you pick the parts 
 Execution flow
 --------------
 
-The job manager pops jobs from a queue and processes them. Each job specifies an input, an output, and transcoding parameters. Optionally the job may also specify a notification URL which is invoked to inform the caller about job progress.
+The task manager pops jobs from a queue and processes them. Each job specifies an input, an output, and transcoding parameters. Optionally the job may also specify a notification URL which is invoked to inform the caller about job progress.
 
 Supported inputs at the moment:
 
@@ -136,7 +136,7 @@ Image jobs have the `type` key set to `image`. The key `params` must be set to a
   * `medium`: If `web`, the image will be optimized for web usage. See below for details.
   * `content_type`: Content type of resultant file. The system will be able to guess basic types such as `image/jpeg`.
 
-Note that scaling always preserves the aspect ratio of the original image; in other words, if the original is 100 x 200, then passing the dimensions 100x100 will produce an image that is 50x100.
+Note that scaling always preserves the aspect ratio of the original image; in other words, if the original is 100 x 200, then passing the dimensions 100x100 will produce an image that is 50x100. Enabling cropping, however, will force the aspect ratio of the specified dimensions.
 
 If the option `medium` specifies `web`, the following additional transformations will be performed:
 
@@ -180,7 +180,7 @@ Example S3 URLs:
 Current limitations
 ===================
 
-* Daemon supports only one job manager thread at a time.
+* Daemon supports only one task manager thread at a time.
 * Transcoding options are very basic.
 * No client access control; anyone can submit jobs.
 
@@ -220,7 +220,7 @@ Create a configuration under `config`, eg. `config/development.yml`:
       web_service_handler: thin
       sqs_queue_name: tootsie
 
-Start the job manager with `bin/job_manager start`.
+Start the task manager with `bin/task_manager start`.
 
 Start the web service with `bin/web_service start`.
 
