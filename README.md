@@ -117,7 +117,7 @@ Completion notification provides the following data:
 Image transcoding jobs
 ----------------------
 
-Video jobs have the `type` key set to `image`. The key `params` must be set to a hash with these keys:
+Image jobs have the `type` key set to `image`. The key `params` must be set to a hash with these keys:
 
 * `input_url`: URL to input file, either an HTTP URL, `file:/path` URL or an S3 URL (see below).
 * `versions`: Either a hash or an array of such hashes, each with the following keys:
