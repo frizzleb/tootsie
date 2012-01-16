@@ -5,13 +5,21 @@ Bundler.require
 
 $:.unshift(File.join(File.dirname(__FILE__), "/lib"))
 require 'tootsie'
-require 'tootsie/web_service'
 
-ENV['RACK_ENV'] ||= 'development'
+environment = ENV['RACK_ENV'] ||= 'development'
+set :environment, environment
 
-set :environment, ENV['RACK_ENV'].to_sym
+logger = Logger.new(File.expand_path("../log/environment.log", __FILE__))
 
-Tootsie::Application.new(:environment => ENV['RACK_ENV'], :logger => Logger.new("./log/#{ENV['RACK_ENV']}.log"))
-Tootsie::Application.get.configure!
-Thread.new { Tootsie::Application.get.task_manager.run! } if ENV['RACK_ENV'] == 'development'
+app = Tootsie::Application.new(
+  :environment => environment,
+  :logger => logger)
+app.configure!
+
+if environment == 'development'
+  Thread.new do
+    Tootsie::Application.get.task_manager.run!
+  end
+end
+
 run Tootsie::WebService
