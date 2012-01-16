@@ -10,6 +10,7 @@ gem 'xml-simple'
 gem 'thin'
 gem 's3'
 gem 'sqs'
+gem 'unicorn', '~> 4.1.1'
 
 # Gems for running tests.
 group :test do
