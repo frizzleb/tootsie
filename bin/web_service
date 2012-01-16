@@ -11,10 +11,10 @@ else
   Bundler.setup
 end
 
-$:.unshift(File.join(File.dirname(__FILE__), "/../lib"))
 require 'tootsie'
 
-environment = :development
+environment = ENV['RACK_ENV']
+environment ||= :development
 
 ARGV.options do |opts|
   opts.banner = "Usage: #{File.basename($0)} [OPTIONS] [start | stop | restart | status]"

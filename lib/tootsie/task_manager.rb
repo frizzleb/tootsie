@@ -36,7 +36,7 @@ module Tootsie
               task.execute!
             end
           end
-        rescue Interrupt, SignalException
+        rescue Interrupt, SignalException, SystemExit
           raise
         rescue Exception => exception
           backtrace = exception.backtrace.map { |s| "  #{s}\n" }.join

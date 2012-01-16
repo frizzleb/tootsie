@@ -11,10 +11,12 @@ else
   Bundler.setup
 end
 
-$:.unshift(File.join(File.dirname(__FILE__), "/../lib"))
 require 'tootsie'
 
+environment = ENV['RACK_ENV']
 environment = :development
+
+num_workers = 4
 
 ARGV.options do |opts|
   opts.banner = "Usage: #{File.basename($0)} [OPTIONS] [start | stop | restart | status]"
@@ -22,6 +24,10 @@ ARGV.options do |opts|
   opts.on("-e", "--environment=env", String, 
     "Environment to run in (default: #{environment})") do |value| 
     environment = value
+  end
+  opts.on("-n", "--num-workers=WORKERS", Integer,
+    "Specify number of workers to fork (defaults to #{num_workers}.") do |value|
+    num_workers = [1, value.to_i].max
   end
   opts.on("-h", "--help", "Show this help message.") do
     puts opts
@@ -38,9 +44,28 @@ controller = Tootsie::Daemon.new(
   :root => File.join(File.dirname(__FILE__), "/.."),
   :pid_file => File.join(File.dirname(__FILE__), "/../tmp/task_manager.pid"),
   :log_file => File.join(File.dirname(__FILE__), "/../log/task_manager.log"))
+
+spawner = Spawner.new(:num_children => num_workers, :logger => controller.logger)
+
 controller.on_spawn do
-  app = Tootsie::Application.new(:environment => environment, :logger => controller.logger)
-  app.configure!
-  app.task_manager.run!
+  $0 = "tootsie: master"
+  spawner.on_spawn do
+    $0 = "tootsie: worker"
+    Signal.trap('TERM') do
+      exit(2)
+    end
+    app = Tootsie::Application.new(
+      :environment => environment,
+      :logger => controller.logger)
+    app.configure!
+    begin
+      app.task_manager.run!
+    rescue SystemExit, Interrupt
+    end
+  end
+  spawner.run
+end
+controller.on_terminate do
+  spawner.terminate
 end
 controller.control(ARGV)
