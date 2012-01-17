@@ -11,10 +11,11 @@ else
   Bundler.setup
 end
 
+$:.unshift(File.expand_path('../../lib', __FILE__))
 require 'tootsie'
 
 environment = ENV['RACK_ENV']
-environment = :development
+environment ||= :development
 
 num_workers = 4
 
