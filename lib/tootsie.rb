@@ -1,3 +1,7 @@
+module Tootsie
+  VERSION = '0.9.0'.freeze
+end
+
 require 'active_support/core_ext/hash'
 
 require 'tootsie/application'

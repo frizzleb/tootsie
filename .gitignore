@@ -11,3 +11,4 @@
 *.sublime-workspace
 .rspec
 /coverage
+/pkg
