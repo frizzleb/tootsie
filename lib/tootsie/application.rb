@@ -16,7 +16,6 @@ module Tootsie
       @configuration.load_from_file(File.join(Dir.pwd, "config/#{@environment}.yml"))
       @queue = Tootsie::SqsQueue.new(@configuration.sqs_queue_name, sqs_service)
       @task_manager = TaskManager.new(@queue)
-      @web_service = WebService.new
     end
     
     def s3_service
@@ -31,13 +30,6 @@ module Tootsie
         :secret_access_key => @configuration.aws_secret_access_key)
     end
     
-    def run_web_service!
-      WebService.run!(
-        :host => @configuration.web_service_host,
-        :port => @configuration.web_service_port,
-        :handler => @configuration.web_service_handler)
-    end
-    
     class << self
       def get
         @@instance
@@ -48,7 +40,6 @@ module Tootsie
     
     attr_reader :configuration
     attr_reader :task_manager
-    attr_reader :web_service
     attr_reader :queue
     attr_reader :logger
     

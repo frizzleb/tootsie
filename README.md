@@ -215,14 +215,13 @@ Create a configuration under `config`, eg. `config/development.yml`:
     --- 
       aws_access_key_id: <your Amazon key>
       aws_secret_access_key: <your Amazon secret>
-      web_service_host: localhost
-      web_service_port: 9000
-      web_service_handler: thin
       sqs_queue_name: tootsie
 
-Start the task manager with `bin/task_manager start`.
+Start the task manager with `bin/tootsie_task_manager start`. You can specify the number of workers with `-n`.
 
-Start the web service with `bin/web_service start`.
+To run the web service, you will need a Rack-compatible web server, such as Unicorn or Thin. To start with Thin on port 9090:
+
+    $ thin --daemonize --rackup config.ru --port 9090 start
 
 Jobs may now be posted to the web service API. For example:
 
