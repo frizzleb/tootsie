@@ -1,15 +1,15 @@
 source 'http://rubygems.org'
 
-gem 'json'
-gem 'sinatra'
+gem 'json', '~> 1.4.6'
+gem 'sinatra', '~> 1.0'
 gem 'activesupport', '~>3.0.0'
 gem 'httpclient', '~>2.2.1'
-gem 'builder'
-gem 'mime-types'
-gem 'xml-simple'
-gem 'thin'
-gem 's3'
-gem 'sqs'
+gem 'builder', '~> 2.1.2'
+gem 'mime-types', '~> 1.16'
+gem 'xml-simple', '~> 1.0.12'
+gem 'thin', '~> 1.2.7'
+gem 's3', '~> 0.3.7'
+gem 'sqs', '~> 0.1.2'
 gem 'unicorn', '~> 4.1.1'
 
 # Gems for running tests.

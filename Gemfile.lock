@@ -42,15 +42,15 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport (~> 3.0.0)
-  builder
+  builder (~> 2.1.2)
   httpclient (~> 2.2.1)
-  json
-  mime-types
+  json (~> 1.4.6)
+  mime-types (~> 1.16)
   rake
   rspec (~> 2.7.0)
-  s3
-  sinatra
-  sqs
-  thin
+  s3 (~> 0.3.7)
+  sinatra (~> 1.0)
+  sqs (~> 0.1.2)
+  thin (~> 1.2.7)
   unicorn (~> 4.1.1)
-  xml-simple
+  xml-simple (~> 1.0.12)
