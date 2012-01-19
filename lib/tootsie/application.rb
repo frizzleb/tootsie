@@ -8,7 +8,7 @@ module Tootsie
     def initialize(options = {})
       @@instance = self
       @environment = options[:environment] || :development
-      @logger = options[:logger] || Logger.new(File.open('/dev/null', 'w'))
+      @logger = options[:logger] || Logger.new($stderr)
       @configuration = Configuration.new
     end
     

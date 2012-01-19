@@ -18,7 +18,7 @@ module Tootsie
     def initialize(options = {})
       @root = options[:root] || Dir.pwd
       @pid_file = options[:pid_file]
-      @log_file = options[:log_file]
+      @logger = options[:logger] || Logger.new('/dev/null')
       @on_spawn = nil
     end
 
@@ -101,7 +101,6 @@ module Tootsie
         end      
         return
       end
-      @logger = nil
       class << logger
         def format_message(severity, timestamp, progname, msg)
           "[#{timestamp}] #{msg}\n"
@@ -249,13 +248,9 @@ module Tootsie
       end
     end
   
-    # Returns logger.
-    def logger
-      return @logger ||= Logger.new(@log_file || "/dev/null")
-    end
-  
     attr_reader :root
     attr_reader :pid_file
+    attr_reader :logger
   
     private
 

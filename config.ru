@@ -7,13 +7,10 @@ $:.unshift(File.join(File.dirname(__FILE__), "/lib"))
 require 'tootsie'
 
 environment = ENV['RACK_ENV'] ||= 'development'
-set :environment, environment
-
-logger = Logger.new(File.expand_path("../log/environment.log", __FILE__))
 
 app = Tootsie::Application.new(
   :environment => environment,
-  :logger => logger)
+  :logger => ENV["rack.logger"])
 app.configure!
 
 if environment == 'development'

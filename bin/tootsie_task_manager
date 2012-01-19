@@ -18,6 +18,7 @@ environment = ENV['RACK_ENV']
 environment ||= :development
 
 num_workers = 4
+logger = nil
 
 ARGV.options do |opts|
   opts.banner = "Usage: #{File.basename($0)} [OPTIONS] [start | stop | restart | status]"
@@ -29,6 +30,15 @@ ARGV.options do |opts|
   opts.on("-n", "--num-workers=WORKERS", Integer,
     "Specify number of workers to fork (defaults to #{num_workers}.") do |value|
     num_workers = [1, value.to_i].max
+  end
+  opts.on("-l TARGET", "--logger TARGET", String,
+    "Log to TARGET, which is either a file name or 'syslog'.") do |value|
+    if value == 'syslog'
+      require 'syslog_logger'
+      logger = SyslogLogger.new('tootsie')
+    else
+      logger = Logger.new(value)
+    end
   end
   opts.on("-h", "--help", "Show this help message.") do
     puts opts
@@ -44,7 +54,7 @@ end
 controller = Tootsie::Daemon.new(
   :root => File.join(File.dirname(__FILE__), "/.."),
   :pid_file => File.join(File.dirname(__FILE__), "/../tmp/task_manager.pid"),
-  :log_file => File.join(File.dirname(__FILE__), "/../log/task_manager.log"))
+  :logger => logger)
 
 spawner = Spawner.new(:num_children => num_workers, :logger => controller.logger)
 
