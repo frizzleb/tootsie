@@ -1,5 +1,5 @@
 module Tootsie
-  VERSION = '0.9.0'.freeze
+  VERSION = '0.9.0'
 end
 
 require 'active_support/core_ext/hash'
