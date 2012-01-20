@@ -4,6 +4,7 @@ module Tootsie
     
     def initialize(options = {})
       @@instance = self
+      @logger = Logger.new('/dev/null')
       @configuration = Configuration.new
     end
     
