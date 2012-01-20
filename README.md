@@ -217,7 +217,7 @@ Create a configuration, eg. `tootsie.conf`:
       aws_secret_access_key: <your Amazon secret>
       sqs_queue_name: tootsie
 
-Start the task manager with `tootsie_task_manager -c tootsie.conf start`.
+Start the task manager with `tootsie -c tootsie.conf start`. This will start Tootsie as a daemon.
 
 To run the web service, you will need a Rack-compatible web server, such as Unicorn or Thin. To start with Thin on port 9090:
 
