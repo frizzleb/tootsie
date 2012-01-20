@@ -4,12 +4,19 @@ module Tootsie
     
     def initialize(options = {})
       @@instance = self
-      @logger = options[:logger] || Logger.new($stderr)
       @configuration = Configuration.new
     end
     
     def configure!(config_path)
       @configuration.load_from_file(config_path)
+      case @configuration.log_path
+        when 'syslog'
+          @logger = SyslogLogger.new('tootsie')
+        when String
+          @logger = Logger.new(@configuration.log_path)
+        else
+          @logger = Logger.new($stderr)
+      end
       @queue = Tootsie::SqsQueue.new(@configuration.sqs_queue_name, sqs_service)
       @task_manager = TaskManager.new(@queue)
     end

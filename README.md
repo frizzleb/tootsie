@@ -180,7 +180,6 @@ Example S3 URLs:
 Current limitations
 ===================
 
-* Daemon supports only one task manager thread at a time.
 * Transcoding options are very basic.
 * No client access control; anyone can submit jobs.
 
@@ -216,8 +215,11 @@ Create a configuration, eg. `tootsie.conf`:
       aws_access_key_id: <your Amazon key>
       aws_secret_access_key: <your Amazon secret>
       sqs_queue_name: tootsie
+      pid_path: <where to write pid file>
+      log_path: <where to write log file>
+      worker_count: <number of workers>
 
-Start the task manager with `tootsie -c tootsie.conf start`. This will start Tootsie as a daemon.
+Start the task manager with `tootsie -c tootsie.conf`.
 
 To run the web service, you will need a Rack-compatible web server, such as Unicorn or Thin. To start with Thin on port 9090:
 
