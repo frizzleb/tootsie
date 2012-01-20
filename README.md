@@ -210,14 +210,14 @@ Installation
 Running
 =======
 
-Create a configuration under `config`, eg. `config/development.yml`:
+Create a configuration, eg. `tootsie.conf`:
 
     --- 
       aws_access_key_id: <your Amazon key>
       aws_secret_access_key: <your Amazon secret>
       sqs_queue_name: tootsie
 
-Start the task manager with `bin/tootsie_task_manager start`. You can specify the number of workers with `-n`.
+Start the task manager with `tootsie_task_manager -c tootsie.conf start`.
 
 To run the web service, you will need a Rack-compatible web server, such as Unicorn or Thin. To start with Thin on port 9090:
 

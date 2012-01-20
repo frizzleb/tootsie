@@ -3,31 +3,24 @@
 $:.unshift(File.expand_path('../../lib', __FILE__))
 require 'tootsie'
 
-environment = ENV['RACK_ENV']
-environment ||= :development
-
 num_workers = 4
-logger = nil
+config_path = nil
+log_target = 'syslog'
 
 ARGV.options do |opts|
   opts.banner = "Usage: #{File.basename($0)} [OPTIONS] [start | stop | restart | status]"
   opts.separator ""
-  opts.on("-e", "--environment=env", String, 
-    "Environment to run in (default: #{environment})") do |value| 
-    environment = value
-  end
   opts.on("-n", "--num-workers=WORKERS", Integer,
     "Specify number of workers to fork (defaults to #{num_workers}.") do |value|
     num_workers = [1, value.to_i].max
   end
+  opts.on("-c", "--config=PATH", String,
+    "Specify configuration path.") do |value|
+    config_path = value
+  end
   opts.on("-l TARGET", "--logger TARGET", String,
     "Log to TARGET, which is either a file name or 'syslog'.") do |value|
-    if value == 'syslog'
-      require 'syslog_logger'
-      logger = SyslogLogger.new('tootsie')
-    else
-      logger = Logger.new(value)
-    end
+    log_target = value
   end
   opts.on("-h", "--help", "Show this help message.") do
     puts opts
@@ -38,6 +31,18 @@ ARGV.options do |opts|
     puts "Nothing to do. Run with -h for help."
     exit
   end
+end
+
+unless config_path
+  abort 'Configuration file not specified.'
+end
+config_path = File.expand_path(config_path)
+
+case log_target
+  when 'syslog'
+    logger = SyslogLogger.new('tootsie')
+  else
+    logger = Logger.new(log_target)
 end
 
 controller = Tootsie::Daemon.new(
@@ -54,10 +59,8 @@ controller.on_spawn do
     Signal.trap('TERM') do
       exit(2)
     end
-    app = Tootsie::Application.new(
-      :environment => environment,
-      :logger => controller.logger)
-    app.configure!
+    app = Tootsie::Application.new(:logger => controller.logger)
+    app.configure!(config_path)
     begin
       app.task_manager.run!
     rescue SystemExit, Interrupt

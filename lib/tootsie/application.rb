@@ -1,19 +1,15 @@
-require 's3'
-require 'sqs'
-
 module Tootsie
     
   class Application
     
     def initialize(options = {})
       @@instance = self
-      @environment = options[:environment] || :development
       @logger = options[:logger] || Logger.new($stderr)
       @configuration = Configuration.new
     end
     
-    def configure!
-      @configuration.load_from_file(File.join(Dir.pwd, "config/#{@environment}.yml"))
+    def configure!(config_path)
+      @configuration.load_from_file(config_path)
       @queue = Tootsie::SqsQueue.new(@configuration.sqs_queue_name, sqs_service)
       @task_manager = TaskManager.new(@queue)
     end
@@ -35,9 +31,7 @@ module Tootsie
         @@instance
       end
     end
-    
-    attr_accessor :environment
-    
+        
     attr_reader :configuration
     attr_reader :task_manager
     attr_reader :queue

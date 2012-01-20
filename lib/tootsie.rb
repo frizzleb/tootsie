@@ -1,4 +1,8 @@
 require 'active_support/core_ext/hash'
+require 'syslog_logger'
+require 's3'
+require 'sqs'
+require 'yaml'
 
 require 'tootsie/application'
 require 'tootsie/client'
