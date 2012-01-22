@@ -14,7 +14,7 @@ end
 app = Tootsie::Application.new(:logger => ENV["rack.logger"])
 app.configure!(config_path)
 
-if environment == 'development'
+if ENV['RACK_ENV'] == 'development'
   Thread.new do
     Tootsie::Application.get.task_manager.run!
   end
