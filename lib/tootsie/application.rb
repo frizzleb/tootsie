@@ -18,18 +18,34 @@ module Tootsie
         else
           @logger = Logger.new($stderr)
       end
-      @queue = Tootsie::SqsQueue.new(@configuration.sqs_queue_name, sqs_service)
+      @logger.info "Starting"
+
+      queue_options = @configuration.queue_options ||= {}
+
+      adapter = (queue_options[:adapter] || 'sqs').to_s
+      case adapter
+        when 'sqs'
+          @queue = Tootsie::SqsQueue.new(
+            queue_options[:queue],
+            @configuration.aws_access_key_id,
+            @configuration.aws_secret_access_key)
+        when 'amqp'
+          @queue = Tootsie::AmqpQueue.new(
+            queue_options[:host],
+            queue_options[:queue])
+        when 'file'
+          @queue = Tootsie::FileSystemQueue.new(queue_options[:root])
+        else
+          raise 'Invalid queue configuration'
+      end
+
       @task_manager = TaskManager.new(@queue)
     end
     
     def s3_service
+      abort "AWS access key and secret required" unless
+        @configuration.aws_access_key_id and @configuration.aws_secret_access_key
       return @s3_service ||= ::S3::Service.new(
-        :access_key_id => @configuration.aws_access_key_id,
-        :secret_access_key => @configuration.aws_secret_access_key)
-    end
-
-    def sqs_service
-      return @sqs_service ||= ::Sqs::Service.new(
         :access_key_id => @configuration.aws_access_key_id,
         :secret_access_key => @configuration.aws_secret_access_key)
     end

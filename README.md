@@ -1,14 +1,9 @@
 Tootsie
 =======
 
-Tootsie (formerly called Tranz) is a simple audio/video/image transcoding/modification application written in Ruby. It can transcode audio, video and images between different formats, and also perform basic manipulations such as scaling.
+Tootsie (formerly called Tranz) is a simple, robust, scalable audio/video/image transcoding/modification application.
 
-Tootsie has the following external dependencies:
-
-* FFmpeg for transcoding of video and audio.
-* ImageMagick/GraphicsMagick for image conversion.
-* Amazon S3 for loading and storage of files (optional).
-* Amazon Simple Queue Service for internal task queue management (optional).
+Tootsie can transcode audio, video and images between different formats, and also perform basic manipulations such as photo scaling and cropping, for generating thumbnails and photos at different resolutions.
 
 Overview
 --------
@@ -17,14 +12,18 @@ Tootsie is divided into multiple independent parts:
 
 * Job manager: finds new transcoding jobs and executes them.
 * FFmpeg, ImageMagick: performs the actual transcoding.
-* Queue: currently local file-based queues (for testing) and Amazon Simple Queue Service are supported.
-* Storage: currently web servers and Amazon S3 are supported.
+* Queue: stores pending tasks.
+* Storage: loads and saves the file data.
 * Web service: A small RESTful API for managing jobs.
+
+For storage, Tootsie supports web resources (ie., reading with HTTP GET, writing with HTTP POST) and Amazon S3 buckets.
+
+For queues, Tootsie supports local file-based queues (mostly suitable for testing), AMQP queues (eg., RabbitMQ) and Amazon Simple Queue Service (aka SQS).
 
 The framework is designed to be easily pluggable, and to let you pick the parts you need to build a custom transcoding service. It is also designed to be easily distributed across many nodes.
 
-Execution flow
---------------
+Jobs
+----
 
 The task manager pops jobs from a queue and processes them. Each job specifies an input, an output, and transcoding parameters. Optionally the job may also specify a notification URL which is invoked to inform the caller about job progress.
 
@@ -51,7 +50,7 @@ FFmpeg and ImageMagick are invoked for each job to perform the transcoding. Thes
 API
 ===
 
-To schedule jobs, one uses the web service, a small app that supports job control methods:
+To schedule jobs, one uses the REST service:
 
 * POST `/job`: Schedule a job. Returns 201 if the job was created.
 * GET `/status`: Get current processing status as a JSON hash.
@@ -61,26 +60,8 @@ The job must be posted as an JSON hash with the content type `application/json`.
 * `type`: Type of job. See sections below for details.
 * `notification_url`: Optional notification URL. Progress (including completion and failure) will be reported using POSTs.
 * `retries`: Maximum number of retries, if any. Defaults to 5.
-* `access_key`: Access key for calculating notification signature. See below.
 
 Job-specific parameters are provided in the key `params`.
-
-Access key
-----------
-
-(This part has not been written yet. Nor implemented, actually.)
-
-Notifications
--------------
-
-If a notification URL is provided, events will be sent to it using `POST` requests as JSON data. These are 'fire and forget' and will currently not be retried on failure, and the response status code is ignored.
-
-There are several types of events, indicated by the `event` key:
-
-* `started`: The job was started.
-* `complete`: The job was complete. The key `time_taken` will contain the time taken for the job, in seconds. Additional data will be provided that are specific to the type of job.
-* `failed`: The job failed. The key `reason` will contain a textual explanation for the failure.
-* `failed_will_retry`: The job failed, but is being rescheduled for retrying. The key `reason` will contain a textual explanation for the failure.
 
 Video transcoding jobs
 ----------------------
@@ -152,8 +133,22 @@ Completion notification provides the following data:
 * `height`: height, in pixels, of original image.
 * `depth`: depth, in bits, of original image.
 
-Note about S3 URLs
-------------------
+Notifications
+-------------
+
+If a notification URL is provided, events will be sent to it using `POST` requests as JSON data. These are 'fire and forget' and will currently not be retried on failure, and the response status code is ignored.
+
+There are several types of events, indicated by the `event` key:
+
+* `started`: The job was started.
+* `complete`: The job was complete. The key `time_taken` will contain the time taken for the job, in seconds. Additional data will be provided that are specific to the type of job.
+* `failed`: The job failed. The key `reason` will contain a textual explanation for the failure.
+* `failed_will_retry`: The job failed, but is being rescheduled for retrying. The key `reason` will contain a textual explanation for the failure.
+
+Resource URLs
+-------------
+
+Tootsie supports referring to inputs and outputs using URLs, namely `file:` and `http:`. Additionally, Tootsie supports its own proprietary S3 URL format.
 
 To specify S3 URLs, we use a custom URI format:
 
@@ -186,8 +181,7 @@ Current limitations
 Requirements
 ============
 
-* Ruby 1.9.1 or later.
-* Bundler.
+* Ruby 1.8.7 or later.
 
 For video jobs:
 
@@ -199,12 +193,15 @@ For image jobs:
 * Exiv2
 * pngcrush (optional)
 
+Optional dependencies:
+
+* Amazon S3 for loading and storage of files.
+* AMQP-compliant server (such as RabbitMQ) or Amazon Simple Queue Service for internal task queue management.
+
 Installation
 ============
 
-* Fetch Git repositroy: `git clone git@github.com:origo/tootsie.git`.
-* Install Bundler with `gem install bundler`.
-* Install dependencies with `cd tootsie; bundle install`.
+`gem install tootsie`
 
 Running
 =======
@@ -212,9 +209,11 @@ Running
 Create a configuration, eg. `tootsie.conf`:
 
     --- 
+      queue:
+        adapter: sqs
+        queue: tootise
       aws_access_key_id: <your Amazon key>
       aws_secret_access_key: <your Amazon secret>
-      sqs_queue_name: tootsie
       pid_path: <where to write pid file>
       log_path: <where to write log file>
       worker_count: <number of workers>
@@ -250,7 +249,7 @@ License
 
 This software is licensed under the MIT License.
 
-Copyright © 2010, 2011 Alexander Staubo
+Copyright © 2010, 2011, 2012 Alexander Staubo
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

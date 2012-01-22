@@ -9,9 +9,11 @@ module Tootsie
   # A queue which uses Amazon's Simple Queue Service (SQS).
   class SqsQueue
     
-    def initialize(queue_name, sqs_service)
+    def initialize(queue_name, access_key_id, secret_access_key)
+      @sqs_service = ::Sqs::Service.new(
+        :access_key_id => access_key_id,
+        :secret_access_key => secret_access_key)
       @logger = Application.get.logger
-      @sqs_service = sqs_service
       @queue = @sqs_service.queues.find_first(queue_name)
       unless @queue
         @sqs_service.queues.create(queue_name)
