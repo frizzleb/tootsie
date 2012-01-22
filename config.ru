@@ -6,12 +6,13 @@ Bundler.require
 $:.unshift(File.join(File.dirname(__FILE__), "/lib"))
 require 'tootsie'
 
-environment = ENV['RACK_ENV'] ||= 'development'
+config_path = ENV['TOOTSIE_CONFIG']
+unless config_path
+  abort "You must specify a configuration file with TOOTSIE_CONFIG."
+end
 
-app = Tootsie::Application.new(
-  :environment => environment,
-  :logger => ENV["rack.logger"])
-app.configure!
+app = Tootsie::Application.new(:logger => ENV["rack.logger"])
+app.configure!(config_path)
 
 if environment == 'development'
   Thread.new do
