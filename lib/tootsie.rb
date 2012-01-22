@@ -3,6 +3,7 @@ require 'syslog_logger'
 require 's3'
 require 'sqs'
 require 'yaml'
+require 'optparse'
 
 require 'tootsie/application'
 require 'tootsie/client'
