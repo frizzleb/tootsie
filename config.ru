@@ -7,9 +7,7 @@ $:.unshift(File.join(File.dirname(__FILE__), "/lib"))
 require 'tootsie'
 
 config_path = ENV['TOOTSIE_CONFIG']
-unless config_path
-  abort "You must specify a configuration file with TOOTSIE_CONFIG."
-end
+config_path ||= '/etc/tootsie/tootsie.conf'
 
 app = Tootsie::Application.new(:logger => ENV["rack.logger"])
 app.configure!(config_path)
