@@ -26,14 +26,12 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'mime-types', ['~> 1.16']
   s.add_runtime_dependency 'xml-simple', ['~> 1.0.12']
   s.add_runtime_dependency 'thin', ['~> 1.2.7']
-  
-  # We require 0.3.8 because other versions fail with a Rubygems encoding bug
-  s.add_runtime_dependency 's3', ['0.3.8']
-
+  s.add_runtime_dependency 's3', ['~> 0.3.8']
   s.add_runtime_dependency 'sqs', ['~> 0.1.2']
   s.add_runtime_dependency 'unicorn', ['~> 4.1.1']
   s.add_runtime_dependency 'i18n', ['>= 0.4.2']
   s.add_runtime_dependency 'scashin133-syslog_logger', ['~> 1.7.3']
+
   s.add_development_dependency "rspec"
   s.add_development_dependency "rake"
 end
