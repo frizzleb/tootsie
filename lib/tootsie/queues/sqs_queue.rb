@@ -16,11 +16,12 @@ module Tootsie
       @logger = Application.get.logger
       @queue = @sqs_service.queues.find_first(queue_name)
       unless @queue
+        @logger.info "Queue #{queue_name} does not exist, creating it"
         @sqs_service.queues.create(queue_name)
         begin
-          timeout(5) do
+          timeout(30) do
             while not @queue
-              sleep(0.5)
+              sleep(1)
               @queue = @sqs_service.queues.find_first(queue_name)
             end
           end
