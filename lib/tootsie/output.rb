@@ -44,9 +44,8 @@ module Tootsie
           end
         when /^http(s?):\/\//
           File.open(@temp_file.path, 'wb') do |file|
-            HTTPClient.new.get_content(@url) do |chunk|
-              file << chunk
-            end
+            HTTPClient.new.post(@url, [],
+              {'Content-Type' => @content_type, :data => file})
           end
         else
           raise IncompatibleOutputError, "Don't know to store output URL: #{@url}"
