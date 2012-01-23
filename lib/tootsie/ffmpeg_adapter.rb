@@ -91,7 +91,7 @@ module Tootsie
             :an => true,
             :f => :rawvideo,
             :s => "#{thumb_width}x#{thumb_height}"))
-        rescue FfmpegAdapterExecutionFailed => e
+        rescue CommandExecutionFailed => e
           @logger.error("Thumbnail rendering failed, ignoring: #{e}")
         end
       end
