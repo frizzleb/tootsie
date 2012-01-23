@@ -43,7 +43,11 @@ module Tootsie
                 begin
                   adapter_options = version_options.dup
                   adapter_options.delete(:target_url)
-                  adapter_options[:thumbnail] = @thumbnail_options.merge(:filename => thumbnail_output.file_name) if thumbnail_output
+                  if thumbnail_output
+                    adapter_options[:thumbnail] = @thumbnail_options.merge(:filename => thumbnail_output.file_name)
+                  else
+                    adapter_options.delete(:thumbnail)
+                  end
 
                   adapter = Tootsie::FfmpegAdapter.new(:thread_count => @thread_count)
                   if block

@@ -67,7 +67,7 @@ module Tootsie
                 result_width, result_height = $1.to_i, $2.to_i
               end
           end
-          progress.call(elapsed_time, expected_duration) if elapsed_time
+          progress.call(elapsed_time, expected_duration) if elapsed_time and expected_duration
         end
       end
 
