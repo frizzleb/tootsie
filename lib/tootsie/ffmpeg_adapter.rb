@@ -8,11 +8,9 @@ module Tootsie
       @ffmpeg_arguments = {}
       @ffmpeg_arguments['threads'] = (options[:thread_count] || 1)
       @ffmpeg_arguments['v'] = 1
-      if false
-        # TODO: Only in newer FFmpeg versions
-        @ffmpeg_arguments['xerror'] = true
-        @ffmpeg_arguments['loglevel'] = 'verbose'
-      end
+      @ffmpeg_arguments['xerror'] = true
+      # TODO: Only in newer FFmpeg versions
+      #@ffmpeg_arguments['loglevel'] = 'verbose'
       @ffmpeg_arguments['y'] = true
     end
     
