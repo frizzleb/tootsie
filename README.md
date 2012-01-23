@@ -233,7 +233,7 @@ Jobs may now be posted to the web service API. For example:
       'notification_url': 'http://example.com/transcoder_notification',
       'params': {
         'input_url': 'http://example.com/test.3gp',
-        'outputs': {
+        'versions': {
           'target_url': 's3:mybucket/test.mp4?acl=public_read',
           'audio_sample_rate': 44100,
           'audio_bitrate': 64000,
