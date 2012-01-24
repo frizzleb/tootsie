@@ -7,6 +7,7 @@ module Tootsie
         @input_url = params[:input_url]
         @versions = [params[:versions] || {}].flatten
         @logger = Application.get.logger
+        @extractor = ImageMetadataExtractor.new(:logger => @logger)
       end
     
       def valid?
@@ -32,7 +33,7 @@ module Tootsie
               
               output = Output.new(version_options[:target_url])
               begin
-                result[:metadata] ||= ImageMetadataExtractor.new.extract_from_file(input.file_name)
+                result[:metadata] ||= @extractor.extract_from_file(input.file_name)
                 
                 original_depth = nil
                 original_width = nil

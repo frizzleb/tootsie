@@ -5,7 +5,8 @@ module Tootsie
 
   class ImageMetadataExtractor
 
-    def initialize
+    def initialize(options = {})
+      @logger = options[:logger]
       @metadata = {}
     end
 
@@ -44,12 +45,26 @@ module Tootsie
               when 'Short', 'Long'
                 value = value.to_i
               when 'Date'
-                value = Time.parse(value)
+                begin
+                  value = Time.parse(value)
+                rescue Exception => e
+                  if @logger
+                    @logger.warn "Invalid time format in EXIF data, ignoring value: #{value.inspect}"
+                  end
+                  value = nil
+                end
               else
                 begin
                   Iconv.iconv("utf-8", "utf-8", value)
                 rescue Iconv::IllegalSequence, Iconv::InvalidCharacter
-                  value = Iconv.iconv("utf-8", "iso-8859-1", value)[0]
+                  begin
+                    value = Iconv.iconv("utf-8", "iso-8859-1", value)[0]
+                  rescue Exception => e
+                    if @logger
+                      @logger.warn "Invalid encoding in EXIF data, ignoring value: #{value.inspect}"
+                    end
+                    value = nil
+                  end
                 else
                   if value.respond_to?(:force_encoding)  # 1.9.
                     value.force_encoding 'utf-8'
@@ -58,8 +73,10 @@ module Tootsie
                   end
                 end
             end
-            entry = {:value => value, :type => type.underscore}
-            (@metadata[key] ||= []) << entry
+            if value
+              entry = {:value => value, :type => type.underscore}
+              (@metadata[key] ||= []) << entry
+            end
           end
         end
       end
