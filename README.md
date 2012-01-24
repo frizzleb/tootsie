@@ -177,6 +177,8 @@ Current limitations
 
 * Transcoding options are very basic.
 * No client access control; anyone can submit jobs.
+* SQS: Due to limitations in the `sqs` gem, only US queues may be used at the moment.
+* AMQP adapter does not support measuring the queue length at the moment.
 
 Requirements
 ============
@@ -243,6 +245,38 @@ Jobs may now be posted to the web service API. For example:
       }
     }
     END
+
+Configuration
+=============
+
+The configuration is a YAML document with the following keys:
+
+    aws_access_key_id: <your Amazon key>
+    aws_secret_access_key: <your Amazon secret>
+    pid_path: <where to write pid file>
+    log_path: <where to write log file>
+    worker_count: <number of workers>
+    queue:
+      <... queue options ...>
+
+The queue options is a hash with a key `adapter` telling Tootsie which queue implementation to use.
+
+The `sqs` adapter takes the following options:
+
+    queue_name: <name of queue, defaults to 'tootsie'>
+    max_backoff: <max seconds to wait when queue is empty, defaults to 2>
+
+For the `amqp` adapter:
+
+    queue_name: <name of queue, defaults to 'tootsie'>
+    host_name: <host name of AMQP server, defaults to localhost>
+    max_backoff: <max seconds to wait when queue is empty, defaults to 2>
+
+For the `file` adapter:
+
+    root: <directory to store files>
+
+Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.
 
 License
 =======
