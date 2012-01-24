@@ -3,10 +3,13 @@ module Tootsie
   # A queue which uses the AMQP protocol.
   class AmqpQueue
     
-    def initialize(host_name, queue_name)
+    def initialize(options = {})
+      options.assert_valid_keys(:host_name, :queue_name, :max_backoff)
       @logger = Application.get.logger
-      @host_name = host_name || 'localhost'
-      @queue_name = queue_name || 'tootsie'
+      @host_name = options[:host_name] || 'localhost'
+      @queue_name = options[:queue_name] || 'tootsie'
+      @max_backoff = (options[:max_backoff] || 2).to_f
+      @backoff = 0.0
       connect!
     end
     
@@ -61,7 +64,7 @@ module Tootsie
             @backoff /= 2.0
             return result
           else
-            @backoff = [@backoff * 1.1, 1.0].min
+            @backoff = [@backoff * 1.1, @max_backoff].min
             @logger.info "Backing off #{@backoff}"
             sleep(@backoff)
           end

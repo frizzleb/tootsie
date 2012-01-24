@@ -26,13 +26,15 @@ module Tootsie
       case adapter
         when 'sqs'
           @queue = Tootsie::SqsQueue.new(
-            queue_options[:queue],
-            @configuration.aws_access_key_id,
-            @configuration.aws_secret_access_key)
+            :queue_name => queue_options[:queue],
+            :access_key_id => @configuration.aws_access_key_id,
+            :secret_access_key => @configuration.aws_secret_access_key,
+            :max_backoff => queue_options[:max_backoff])
         when 'amqp'
           @queue = Tootsie::AmqpQueue.new(
-            queue_options[:host],
-            queue_options[:queue])
+            :host_name => queue_options[:host],
+            :queue_name => queue_options[:queue],
+            :max_backoff => queue_options[:max_backoff])
         when 'file'
           @queue = Tootsie::FileSystemQueue.new(queue_options[:root])
         else

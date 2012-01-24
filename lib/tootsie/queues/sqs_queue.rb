@@ -9,27 +9,30 @@ module Tootsie
   # A queue which uses Amazon's Simple Queue Service (SQS).
   class SqsQueue
     
-    def initialize(queue_name, access_key_id, secret_access_key)
+    def initialize(options)
+      options.assert_valid_keys(:access_key_id, :secret_access_key, :queue_name, :max_backoff)
       @sqs_service = ::Sqs::Service.new(
-        :access_key_id => access_key_id,
-        :secret_access_key => secret_access_key)
+        :access_key_id => options[:access_key_id],
+        :secret_access_key => options[:secret_access_key])
       @logger = Application.get.logger
-      @queue = @sqs_service.queues.find_first(queue_name)
+      @queue_name = options[:queue_name] || 'tootsie'
+      @queue = @sqs_service.queues.find_first(@queue_name)
       unless @queue
-        @logger.info "Queue #{queue_name} does not exist, creating it"
-        @sqs_service.queues.create(queue_name)
+        @logger.warn "Queue #{@queue_name} does not exist, creating it"
+        @sqs_service.queues.create(@queue_name)
         begin
           timeout(30) do
             while not @queue
               sleep(1)
-              @queue = @sqs_service.queues.find_first(queue_name)
+              @queue = @sqs_service.queues.find_first(@queue_name)
             end
           end
         rescue Timeout::Error
           raise SqsQueueCouldNotFindQueueError
         end
       end
-      @backoff = 0.5
+      @max_backoff = (options[:max_backoff] || 2).to_f
+      @backoff = 0.0
     end
     
     def count
@@ -76,7 +79,7 @@ module Tootsie
           @backoff /= 2.0
           break
         else
-          @backoff = [@backoff * 0.2, 2.0].min
+          @backoff = [@backoff * 0.2, @max_backoff].min
         end
         break unless options[:wait]
         sleep(@backoff)
