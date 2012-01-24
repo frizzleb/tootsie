@@ -51,7 +51,11 @@ module Tootsie
                 rescue Iconv::IllegalSequence, Iconv::InvalidCharacter
                   value = Iconv.iconv("utf-8", "iso-8859-1", value)[0]
                 else
-                  value.force_encoding 'utf-8'
+                  if value.respond_to?(:force_encoding)  # 1.9.
+                    value.force_encoding 'utf-8'
+                  else
+                    value
+                  end
                 end
             end
             entry = {:value => value, :type => type.underscore}
