@@ -11,6 +11,7 @@ module Tootsie
     
     def initialize(options)
       options.assert_valid_keys(:access_key_id, :secret_access_key, :queue_name, :max_backoff)
+      @backoff = Utility::Backoff.new(:max => options[:max_backoff])
       @sqs_service = ::Sqs::Service.new(
         :access_key_id => options[:access_key_id],
         :secret_access_key => options[:secret_access_key])
@@ -31,8 +32,6 @@ module Tootsie
           raise SqsQueueCouldNotFindQueueError
         end
       end
-      @max_backoff = (options[:max_backoff] || 2).to_f
-      @backoff = 0.0
     end
     
     def count
@@ -60,29 +59,30 @@ module Tootsie
     def pop(options = {})
       item = nil
       loop do
-        begin
-          message = @queue.message(5)
-        rescue Exception => exception
-          check_exception(exception)
-          @logger.error("Reading queue failed with exception #{exception.class}: #{exception.message}")
-          break unless options[:wait]
-          sleep(0.5)
-          retry
-        end
-        if message
+        @backoff.with do
           begin
-            item = JSON.parse(message.body)
-          ensure
-            # Always destroy, even if parsing fails
-            message.destroy
+            message = @queue.message(5)
+          rescue Exception => exception
+            check_exception(exception)
+            @logger.error("Reading queue failed with exception #{exception.class}: #{exception.message}")
+            break unless options[:wait]
+            sleep(0.5)
+            retry
           end
-          @backoff /= 2.0
-          break
-        else
-          @backoff = [@backoff * 0.2, @max_backoff].min
+          if message
+            begin
+              item = JSON.parse(message.body)
+            ensure
+              # Always destroy, even if parsing fails
+              message.destroy
+            end
+            true
+          else
+            false
+          end
+          break unless options[:wait]
         end
-        break unless options[:wait]
-        sleep(@backoff)
+        break if item
       end
       item
     end

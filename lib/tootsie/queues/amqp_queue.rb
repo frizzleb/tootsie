@@ -5,11 +5,10 @@ module Tootsie
     
     def initialize(options = {})
       options.assert_valid_keys(:host_name, :queue_name, :max_backoff)
+      @backoff = Utility::Backoff.new(:max => options[:max_backoff])
       @logger = Application.get.logger
       @host_name = options[:host_name] || 'localhost'
       @queue_name = options[:queue_name] || 'tootsie'
-      @max_backoff = (options[:max_backoff] || 2).to_f
-      @backoff = 0.0
       connect!
     end
     
@@ -29,7 +28,7 @@ module Tootsie
     def pop(options = {})
       item = nil
       loop do
-        with_backoff do
+        @backoff.with do
           message = nil
           with_retry do
             with_reconnect do
@@ -48,6 +47,7 @@ module Tootsie
               true
             end
           end
+          break unless options[:wait]
         end
         break if item
       end
@@ -55,21 +55,6 @@ module Tootsie
     end
 
     private
-
-      def with_backoff(&block)
-        @backoff ||= 0.5
-        loop do
-          result = yield
-          if result
-            @backoff /= 2.0
-            return result
-          else
-            @backoff = [@backoff * 1.1, @max_backoff].min
-            @logger.info "Backing off #{@backoff}"
-            sleep(@backoff)
-          end
-        end
-      end
 
       def with_reconnect(&block)
         begin
