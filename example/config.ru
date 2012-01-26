@@ -1,4 +1,3 @@
-$:.unshift(File.join(File.dirname(__FILE__), "/lib"))
 require 'tootsie'
 
 config_path = ENV['TOOTSIE_CONFIG']

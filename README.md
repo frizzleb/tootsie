@@ -222,9 +222,14 @@ Create a configuration, eg. `tootsie.conf`:
 
 Start the task manager with `tootsie -c tootsie.conf`.
 
+Now create a rackup file, and call it `config.ru`:
+
+    require 'tootsie'
+    Tootsie::Application.new.configure!('tootsie.conf')
+    run Tootsie::WebService
+
 To run the web service, you will need a Rack-compatible web server, such as Unicorn or Thin. To start with Thin on port 9090:
 
-    $ export TOOTSIE_CONFIG=<path to your config>
     $ thin --daemonize --rackup config.ru --port 9090 start
 
 Jobs may now be posted to the web service API. For example:
