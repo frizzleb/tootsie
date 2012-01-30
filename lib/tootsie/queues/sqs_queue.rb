@@ -76,11 +76,12 @@ module Tootsie
               # Always destroy, even if parsing fails
               message.destroy
             end
+          end
+          if item or not options[:wait]
             true
           else
             false
           end
-          break unless options[:wait]
         end
         break if item
       end

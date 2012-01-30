@@ -44,10 +44,13 @@ module Tootsie
               with_reconnect do
                 @queue.ack(:delivery_tag => message[:delivery_details][:delivery_tag])
               end
-              true
             end
           end
-          break unless options[:wait]
+          if item or not options[:wait]
+            true
+          else
+            false
+          end
         end
         break if item
       end
