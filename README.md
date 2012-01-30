@@ -236,16 +236,16 @@ Jobs may now be posted to the web service API. For example:
 
     $ cat << END | curl -d @- http://localhost:9090/job
     {
-      'type': 'video',
-      'notification_url': 'http://example.com/transcoder_notification',
-      'params': {
-        'input_url': 'http://example.com/test.3gp',
-        'versions': {
-          'target_url': 's3:mybucket/test.mp4?acl=public_read',
-          'audio_sample_rate': 44100,
-          'audio_bitrate': 64000,
-          'format': 'flv',
-          'content_type': 'video/x-flv'
+      "type": "video",
+      "notification_url": "http://example.com/transcoder_notification",
+      "params": {
+        "input_url": "http://example.com/test.3gp",
+        "versions": {
+          "target_url": "s3:mybucket/test.mp4?acl=public_read",
+          "audio_sample_rate": 44100,
+          "audio_bitrate": 64000,
+          "format": "flv",
+          "content_type": "video/x-flv"
         }
       }
     }
