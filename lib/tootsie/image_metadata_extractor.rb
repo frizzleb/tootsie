@@ -1,4 +1,3 @@
-require 'iconv'
 require 'time'
 
 module Tootsie
@@ -32,7 +31,7 @@ module Tootsie
 
       def run_exiv2(args, params, &block)
         CommandRunner.new("exiv2 #{args}",
-          :output_encoding => 'binary',
+          :output_encoding => 'ascii-8bit',
           :ignore_exit_code => true
         ).run(params, &block)
       end
@@ -54,22 +53,17 @@ module Tootsie
                   value = nil
                 end
               else
-                begin
-                  Iconv.iconv("utf-8", "utf-8", value)
-                rescue Iconv::IllegalSequence, Iconv::InvalidCharacter
+                utf8 = value.dup.force_encoding('utf-8')
+                if utf8.valid_encoding?
+                  value = utf8
+                else
                   begin
-                    value = Iconv.iconv("utf-8", "iso-8859-1", value)[0]
-                  rescue Exception => e
+                    value = value.encode('utf-8', 'iso-8859-1')
+                  rescue EncodingError
                     if @logger
-                      @logger.warn "Invalid encoding in EXIF data, ignoring value: #{value.inspect}"
+                      @logger.warn "Invalid characters in EXIF data that are neither UTF-8 nor ISO-8859-1, ignoring it: #{value.inspect}"
                     end
                     value = nil
-                  end
-                else
-                  if value.respond_to?(:force_encoding)  # 1.9.
-                    value.force_encoding 'utf-8'
-                  else
-                    value
                   end
                 end
             end
