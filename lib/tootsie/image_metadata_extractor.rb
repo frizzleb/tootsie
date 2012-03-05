@@ -53,19 +53,7 @@ module Tootsie
                   value = nil
                 end
               else
-                utf8 = value.dup.force_encoding('utf-8')
-                if utf8.valid_encoding?
-                  value = utf8
-                else
-                  begin
-                    value = value.encode('utf-8', 'iso-8859-1')
-                  rescue EncodingError
-                    if @logger
-                      @logger.warn "Invalid characters in EXIF data that are neither UTF-8 nor ISO-8859-1, ignoring it: #{value.inspect}"
-                    end
-                    value = nil
-                  end
-                end
+                value = decode_string(value)
             end
             if value
               entry = {:value => value, :type => type.underscore}
@@ -73,6 +61,39 @@ module Tootsie
             end
           end
         end
+      end
+
+      def decode_string(value)
+        if value.respond_to?(:force_encoding)  # Ruby 1.9
+          utf8 = value.dup.force_encoding('utf-8')
+          if utf8.valid_encoding?
+            value = utf8
+          else
+            begin
+              value = value.encode('utf-8', 'iso-8859-1')
+            rescue EncodingError
+              if @logger
+                @logger.warn "Invalid characters in EXIF data that are neither UTF-8 nor ISO-8859-1, ignoring it: #{value.inspect}"
+              end
+              value = nil
+            end
+          end
+        else  # Ruby 1.8
+          require 'iconv'
+          begin
+            Iconv.iconv("utf-8", "utf-8", value)
+          rescue Iconv::IllegalSequence, Iconv::InvalidCharacter
+            begin
+              value = Iconv.iconv("utf-8", "iso-8859-1", value)[0]
+            rescue Exception => e
+              if @logger
+                @logger.warn "Invalid encoding in EXIF data, ignoring value: #{value.inspect}"
+              end
+              value = nil
+            end
+          end
+        end
+        value
       end
 
   end
