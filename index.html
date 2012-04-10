@@ -1,0 +1,374 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Tootsie by alexstaubo</title>
+    
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Tootsie</h1>
+        <p>Tootsie is an audio and video transcoding that suppots Amazon S3 and Amazon SQS. MIT license.</p>
+        <p class="view"><a href="https://github.com/alexstaubo/tootsie">View the Project on GitHub <small>alexstaubo/tootsie</small></a></p>
+        <ul>
+          <li><a href="https://github.com/alexstaubo/tootsie/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/alexstaubo/tootsie/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/alexstaubo/tootsie">Fork On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>Tootsie is a simple, robust, scalable audio/video/image transcoding/modification application. Tootsie can transcode audio, video and images between different formats, and also perform basic manipulations such as photo scaling and cropping, for generating thumbnails and photos at different resolutions.</p>
+
+<p>Tootsie is divided into multiple independent parts:</p>
+
+<ul>
+<li>Job manager: finds new transcoding jobs and executes them.</li>
+<li>FFmpeg, ImageMagick: performs the actual transcoding.</li>
+<li>Queue: stores pending tasks.</li>
+<li>Storage: loads and saves the file data.</li>
+<li>Web service: A small RESTful API for managing jobs.</li>
+</ul><p>For storage, Tootsie supports web resources (ie., reading with HTTP GET, writing with HTTP POST) and Amazon S3 buckets.</p>
+
+<p>For queues, Tootsie supports local file-based queues (mostly suitable for testing), AMQP queues (eg., RabbitMQ) and Amazon Simple Queue Service (aka SQS).</p>
+
+<p>The framework is designed to be easily pluggable, and to let you pick the parts you need to build a custom transcoding service. It is also designed to be easily distributed across many nodes.</p>
+
+<h2>Jobs</h2>
+
+<p>The task manager pops jobs from a queue and processes them. Each job specifies an input, an output, and transcoding parameters. Optionally the job may also specify a notification URL which is invoked to inform the caller about job progress.</p>
+
+<p>Supported inputs:</p>
+
+<ul>
+<li>HTTP resource. Currently only public (non-authenticated) resources are supported.</li>
+<li>Amazon S3 bucket resource. S3 buckets must have the appropriate ACLs so that Tootsie can read the files; if the input file is not public, Tootsie must be run with an AWS access key that is granted read access to the file.</li>
+</ul><p>Supported outputs:</p>
+
+<ul>
+<li>HTTP resource. The encoded file will be <code>POST</code>ed to a URL.</li>
+<li>Amazon S3 bucket resource. Tootsie will need write permissions to any S3 buckets.</li>
+</ul><p>Each job may have multiple outputs given a single input. Designwise, the reason for doing this -- as opposed to requiring that the client submit multiple jobs, one for each output -- is twofold:</p>
+
+<ol>
+<li><p>It allows the job to cache the input data locally for the duration of the job, rather than fetching it multiple times. One could suppose that multiple jobs could share the same cached input, but this would be awkward in a distributed setting where each node has its own file system; in such a case, a shared storage mechanism (file system, database or similar) would be needed.</p></li>
+<li><p>It allows the client to be informed when <em>all</em> transcoded versions are available, something which may drastically simplify client logic. For example, a web application submitting a job to produce multiple scaled versions of an image may only start showing these images when all versions have been produced. To know whether all versions have been produced, it needs to maintain state somewhere about the progress. Having a single job produce all versions means this state can be reduced to a single boolean value.</p></li>
+</ol><p>When using multiple outputs per job one should keep in mind that this reduces job throughput, requiring more concurrent job workers to be deployed.</p>
+
+<p>FFmpeg and ImageMagick are invoked for each job to perform the transcoding. These are abstracted behind set of generic options specifying format, codecs, bit rate and so on.</p>
+
+<h1>API</h1>
+
+<p>To schedule jobs, use the REST service:</p>
+
+<ul>
+<li>POST <code>/job</code>: Schedule a job. Returns 201 if the job was created.</li>
+<li>GET <code>/status</code>: Get current processing status as a JSON hash.</li>
+</ul><p>The job must be posted as an JSON hash with the content type <code>application/json</code>. Common to all job scheduling POSTs are these keys:</p>
+
+<ul>
+<li>
+<code>type</code>: Type of job. See sections below for details.</li>
+<li>
+<code>notification_url</code>: Optional notification URL. Progress (including completion and failure) will be reported using POSTs.</li>
+<li>
+<code>retries</code>: Maximum number of retries, if any. Defaults to 5.</li>
+</ul><p>Job-specific parameters are provided in the key <code>params</code>.</p>
+
+<h2>Video transcoding jobs</h2>
+
+<p>Video jobs have the <code>type</code> key set to either <code>video</code>, <code>audio</code>. Currently, <code>audio</code> is simply an alias for <code>video</code> and handled by the same pipeline. The key <code>params</code> must be set to a hash with these keys:</p>
+
+<ul>
+<li>
+<code>input_url</code>: URL to input file, either an HTTP URL or an S3 URL (see below).</li>
+<li>
+<code>versions</code>: Either a hash or an array of such hashes, each with the following keys:
+
+<ul>
+<li>
+<code>target_url</code>: URL to output resource, either an HTTP URL which accepts POSTs, or an S3 URL.</li>
+<li>
+<code>thumbnail</code>: If specified, a thumbnail will be generated based on the options in this hash with the following keys:</li>
+<li>
+<code>target_url</code>: URL to output resource, either an HTTP URL which accepts POSTs, or an S3 URL.</li>
+<li>
+<code>width</code>: Desired width of thumbnail, defaults to output width.</li>
+<li>
+<code>height</code>: Desired height of thumbnail, defaults to output height.</li>
+<li>
+<code>at_seconds</code>: Desired point (in seconds) at which the thumbnail frame should be captured. Defaults to 50% into stream.</li>
+<li>
+<code>at_fraction</code>: Desired point (in percentage) at which the thumbnail frame should be captured. Defaults to 50% into stream.</li>
+<li>
+<code>force_aspect_ratio</code>: If <code>true</code>, force aspect ratio; otherwise aspect is preserved when computing dimensions.</li>
+<li>
+<code>audio_sample_rate</code>: Audio sample rate, in hertz.</li>
+<li>
+<code>audio_bitrate</code>: Audio bitrate, in bits per second.</li>
+<li>
+<code>audio_codec</code>: Audio codec name, eg. <code>mp4</code>.</li>
+<li>
+<code>video_frame_rate</code>: video frame rate, in hertz.</li>
+<li>
+<code>video_bitrate</code>: video bitrate, in bits per second.</li>
+<li>
+<code>video_codec</code>: video codec name, eg. <code>mp4</code>.</li>
+<li>
+<code>width</code>: desired video frame width in pixels.</li>
+<li>
+<code>height</code>: desired video frame height in pixels.</li>
+<li>
+<code>format</code>: File format.</li>
+<li>
+<code>content_type</code>: Content type of resultant file. Tootsie will not be able to guess this at the moment.</li>
+</ul>
+</li>
+</ul><p>Completion notification provides the following data:</p>
+
+<ul>
+<li>
+<code>outputs</code> contains an array of results. Each is a hash with the following keys:
+
+<ul>
+<li>
+<code>url</code>: the completed file.</li>
+<li>
+<code>metadata</code>: image metadata as a hash. These are raw EXIF and IPTC data from ImageMagick.</li>
+</ul>
+</li>
+</ul><h2>Image transcoding jobs</h2>
+
+<p>Image jobs have the <code>type</code> key set to <code>image</code>. The key <code>params</code> must be set to a hash with these keys:</p>
+
+<ul>
+<li>
+<code>input_url</code>: URL to input file, either an HTTP URL, <code>file:/path</code> URL or an S3 URL (see below).</li>
+<li>
+<code>versions</code>: Either a hash or an array of such hashes, each with the following keys:
+
+<ul>
+<li>
+<code>target_url</code>: URL to output resource, either an HTTP URL, <code>file:/path</code> URL which accepts POSTs, or an S3 URL.</li>
+<li>
+<code>width</code>: Optional desired width of output image.</li>
+<li>
+<code>height</code>: Optional desired height of output image.</li>
+<li>
+<code>scale</code>: One of the following values:</li>
+<li>
+<code>down</code> (default): The input image is scaled to fit within the dimensions <code>width</code> x <code>height</code>. If only <code>width</code> or only <code>height</code> is specified, then the other component will be computed from the aspect ratio of the input image.</li>
+<li>
+<code>up</code>: As <code>within</code>, but allow scaling to dimensions that are larger than the input image.</li>
+<li>
+<code>fit</code>: Similar to <code>down</code>, but the dimensions are chosen so the output width and height are always met or exceeded. In other words, if you pass in an image that is 100x50, specifying output dimensions as 100x100, then the output image will be 150x100.</li>
+<li>
+<code>none</code>: Don't scale at all.</li>
+<li>
+<code>crop</code>: If true, crop the image to the output dimensions.</li>
+<li>
+<code>format</code>: Either <code>jpeg</code>, <code>png</code> or <code>gif</code>.</li>
+<li>
+<code>quality</code>: A quality value between 0.0 and 1.0 which will be translated to a compression level depending on the output coding. The default is 1.0.</li>
+<li>
+<code>strip_metadata</code>: If true, metadata such as EXIF and IPTC will be deleted. For thumbnails, this often reduces the file size considerably.</li>
+<li>
+<code>medium</code>: If <code>web</code>, the image will be optimized for web usage. See below for details.</li>
+<li>
+<code>content_type</code>: Content type of resultant file. The system will be able to guess basic types such as <code>image/jpeg</code>.</li>
+</ul>
+</li>
+</ul><p>Note that scaling always preserves the aspect ratio of the original image; in other words, if the original is 100 x 200, then passing the dimensions 100x100 will produce an image that is 50x100. Enabling cropping, however, will force the aspect ratio of the specified dimensions.</p>
+
+<p>If the option <code>medium</code> specifies <code>web</code>, the following additional transformations will be performed:</p>
+
+<ul>
+<li>The image will be automatically rotated based on EXIF orientation metadata, since web browsers don't do this.</li>
+<li>CMYK images will be converted to RGB, since most web browsers don't seem to display CMYK correctly.</li>
+</ul><p>Completion notification provides the following data:</p>
+
+<ul>
+<li>
+<code>outputs</code> contains an array of results. Each is a hash with the following keys:
+
+<ul>
+<li>
+<code>url</code>: URL for the completed file.</li>
+</ul>
+</li>
+<li>
+<code>metadata</code>: image metadata as a hash. These are raw EXIF and IPTC data from ImageMagick.</li>
+<li>
+<code>width</code>: width, in pixels, of original image.</li>
+<li>
+<code>height</code>: height, in pixels, of original image.</li>
+<li>
+<code>depth</code>: depth, in bits, of original image.</li>
+</ul><h2>Notifications</h2>
+
+<p>If a notification URL is provided, events will be sent to it using <code>POST</code> requests as JSON data. These are 'fire and forget' and will currently not be retried on failure, and the response status code is ignored.</p>
+
+<p>There are several types of events, indicated by the <code>event</code> key:</p>
+
+<ul>
+<li>
+<code>started</code>: The job was started.</li>
+<li>
+<code>complete</code>: The job was complete. The key <code>time_taken</code> will contain the time taken for the job, in seconds. Additional data will be provided that are specific to the type of job.</li>
+<li>
+<code>failed</code>: The job failed. The key <code>reason</code> will contain a textual explanation for the failure.</li>
+<li>
+<code>failed_will_retry</code>: The job failed, but is being rescheduled for retrying. The key <code>reason</code> will contain a textual explanation for the failure.</li>
+</ul><h2>Resource URLs</h2>
+
+<p>Tootsie supports referring to inputs and outputs using URLs, namely <code>file:</code> and <code>http:</code>. Additionally, Tootsie supports its own proprietary S3 URL format.</p>
+
+<p>To specify S3 URLs, we use a custom URI format:</p>
+
+<pre><code>s3:&lt;bucketname&gt;&lt;/path/to/file&gt;[?&lt;options&gt;]
+</code></pre>
+
+<p>The components are:</p>
+
+<ul>
+<li>bucketname: The name of the S3 bucket.</li>
+<li>/path/to/file: The actual S3 key.</li>
+<li>options: Optional parameters for storage, an URL query string.</li>
+</ul><p>The options are:</p>
+
+<ul>
+<li>
+<code>acl</code>: One of <code>private</code> (default), <code>public-read</code>, <code>public-read-write</code> or <code>authenticated-read</code>.</li>
+<li>
+<code>storage_class</code>: Either <code>standard</code> (default) or <code>reduced_redundancy</code>.</li>
+<li>
+<code>content_type</code>: Override stored content type.</li>
+</ul><p>Example S3 URLs:</p>
+
+<ul>
+<li><code>s3:myapp/video</code></li>
+<li><code>s3:myapp/thumbnails?acl=public-read&amp;storage_class=reduced_redundancy</code></li>
+<li><code>s3:myapp/images/12345?content_type=image/jpeg</code></li>
+</ul><h1>Requirements</h1>
+
+<ul>
+<li>Ruby 1.8.7 or later.</li>
+</ul><p>For video jobs:</p>
+
+<ul>
+<li>FFmpeg</li>
+</ul><p>For image jobs:</p>
+
+<ul>
+<li>ImageMagick</li>
+<li>Exiv2</li>
+<li>pngcrush (optional)</li>
+</ul><p>Optional dependencies:</p>
+
+<ul>
+<li>Amazon S3 for loading and storage of files.</li>
+<li>AMQP-compliant server (such as RabbitMQ) or Amazon Simple Queue Service for internal task queue management.</li>
+</ul><h1>Installation</h1>
+
+<p><code>gem install tootsie</code></p>
+
+<h1>Running</h1>
+
+<p>Create a configuration, eg. <code>tootsie.conf</code>:</p>
+
+<pre><code>--- 
+  queue:
+    adapter: sqs
+    queue: tootise
+  aws_access_key_id: &lt;your Amazon key&gt;
+  aws_secret_access_key: &lt;your Amazon secret&gt;
+  pid_path: &lt;where to write pid file&gt;
+  log_path: &lt;where to write log file&gt;
+  worker_count: &lt;number of workers&gt;
+</code></pre>
+
+<p>Start the task manager with <code>tootsie -c tootsie.conf</code>.</p>
+
+<p>Now create a rackup file, and call it <code>config.ru</code>:</p>
+
+<pre><code>require 'tootsie'
+Tootsie::Application.new.configure!('tootsie.conf')
+run Tootsie::WebService
+</code></pre>
+
+<p>To run the web service, you will need a Rack-compatible web server, such as Unicorn or Thin. To start with Thin on port 9090:</p>
+
+<pre><code>$ thin --daemonize --rackup config.ru --port 9090 start
+</code></pre>
+
+<p>Jobs may now be posted to the web service API. For example:</p>
+
+<pre><code>$ cat &lt;&lt; END | curl -d @- http://localhost:9090/job
+{
+  "type": "video",
+  "notification_url": "<a href="http://example.com/transcoder_notification">http://example.com/transcoder_notification</a>",
+  "params": {
+    "input_url": "<a href="http://example.com/test.3gp">http://example.com/test.3gp</a>",
+    "versions": {
+      "target_url": "s3:mybucket/test.mp4?acl=public_read",
+      "audio_sample_rate": 44100,
+      "audio_bitrate": 64000,
+      "format": "flv",
+      "content_type": "video/x-flv"
+    }
+  }
+}
+END
+</code></pre>
+
+<h1>Configuration</h1>
+
+<p>The configuration is a YAML document with the following keys:</p>
+
+<pre><code>aws_access_key_id: &lt;your Amazon key&gt;
+aws_secret_access_key: &lt;your Amazon secret&gt;
+pid_path: &lt;where to write pid file&gt;
+log_path: &lt;where to write log file&gt;
+worker_count: &lt;number of workers&gt;
+queue:
+  &lt;... queue options ...&gt;
+</code></pre>
+
+<p>The queue options is a hash with a key <code>adapter</code> telling Tootsie which queue implementation to use.</p>
+
+<p>The <code>sqs</code> adapter takes the following options:</p>
+
+<pre><code>queue_name: &lt;name of queue, defaults to 'tootsie'&gt;
+max_backoff: &lt;max seconds to wait when queue is empty, defaults to 2&gt;
+</code></pre>
+
+<p>For the <code>amqp</code> adapter:</p>
+
+<pre><code>queue_name: &lt;name of queue, defaults to 'tootsie'&gt;
+host_name: &lt;host name of AMQP server, defaults to localhost&gt;
+max_backoff: &lt;max seconds to wait when queue is empty, defaults to 2&gt;
+</code></pre>
+
+<p>For the <code>file</code> adapter:</p>
+
+<pre><code>root: &lt;directory to store files&gt;
+</code></pre>
+
+<p>Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/alexstaubo">alexstaubo</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
