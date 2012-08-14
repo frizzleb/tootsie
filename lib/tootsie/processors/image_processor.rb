@@ -54,6 +54,13 @@ module Tootsie
                   raise "Unable to determine dimensions of input image"
                 end
 
+                if (output_format = version_options[:format])
+                  # Sanitize format so we can use it in file name
+                  output_format = output_format.to_s
+                  output_format.gsub!(/[^\w]/, '')
+                end
+                output_format ||= original_format
+
                 # Correct for EXIF orientation
                 if [5, 6, 7, 8].include?(original_orientation)
                   original_width, original_height = original_height, original_width
@@ -101,13 +108,10 @@ module Tootsie
                 end
                 
                 convert_command = "convert"
-                convert_options = {:input_file => input.file_name}
-                case version_options[:format]
-                  when 'png', 'jpeg', 'gif'
-                    convert_options[:output_file] = "#{version_options[:format]}:#{output.file_name}"
-                  else
-                    convert_options[:output_file] = output.file_name
-                end
+                convert_options = {
+                  :input_file => input.file_name,
+                  :output_file => "'#{output_format}:#{output.file_name}'"
+                }
 
                 # Animations may contain more than one fram, if so discard the
                 # extra frames when outputting in a non-animation format
