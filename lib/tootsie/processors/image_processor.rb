@@ -41,13 +41,13 @@ module Tootsie
                 original_type = nil
                 original_format = nil
                 original_orientation = nil
-                CommandRunner.new("identify -format '%z %w %h %r %m %[EXIF:Orientation]' :file").
+                CommandRunner.new("identify -format '%z %w %h %m %[EXIF:Orientation] %r' :file").
                   run(:file => input.file_name) do |line|
-                  if line =~ /(\d+) (\d+) (\d+) ([^\s]+) ([^\s]+) (\d+)?/
+                  if line =~ /(\d+) (\d+) (\d+) ([^\s]+) (\d+)? (.+)/
                     original_depth, original_width, original_height = $~[1, 3].map(&:to_i)
-                    original_type = $4
-                    original_format = $5.downcase
-                    original_orientation = $6.try(:to_i)
+                    original_format = $4.downcase
+                    original_orientation = $5.try(:to_i)
+                    original_type = $6
                   end
                 end
                 unless original_width and original_height
@@ -132,7 +132,7 @@ module Tootsie
                 end
 
                 # Fix CMYK images
-                if medium == :web and original_type =~ /CMYK$/
+                if medium == :web and original_type =~ /CMYK/
                   convert_command << " -colorspace rgb"
                 end
 
