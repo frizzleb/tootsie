@@ -108,12 +108,20 @@ module Tootsie
                   else
                     convert_options[:output_file] = output.file_name
                 end
+
+                # Animations may contain more than one fram, if so discard the
+                # extra frames when outputting in a non-animation format
+                if original_format == 'gif' and version_options[:format] != 'gif'
+                  flags << ' -flatten -scene 1'
+                end
+
                 if scale != :none
                   convert_command << " -resize :resize"
                   convert_options[:resize] = "#{scale_width}x#{scale_height}"
                 end
                 if version_options[:crop]
                   convert_command << " -gravity center -crop :crop"
+                  convert_command << " +repage"  # This fixes some animations
                   convert_options[:crop] = "#{new_width}x#{new_height}+0+0"
                 end
                 if version_options[:strip_metadata]
@@ -123,12 +131,14 @@ module Tootsie
 
                 convert_command << " -quality #{((version_options[:quality] || 1.0) * 100).ceil}%"
 
-                # Work around a problem with ImageMagick being too clever and "optimizing"
-                # the bit depth of RGB images that contain a single grayscale channel.
-                # Coincidentally, this avoids ImageMagick rewriting the ICC data and
-                # corrupting it in the process.
-                if original_type =~ /(?:Gray|RGB)(Matte)?$/ and original_format != 'png'
-                  convert_command << " -type TrueColor#{$1}"
+                if original_format =~ /^(jpeg|tiff)$/i
+                  # Work around a problem with ImageMagick being too clever and "optimizing"
+                  # the bit depth of RGB images that contain a single grayscale channel.
+                  # Coincidentally, this avoids ImageMagick rewriting the ICC data and
+                  # corrupting it in the process.
+                  if original_type =~ /(?:Gray|RGB)(Matte)?$/
+                    convert_command << " -type TrueColor#{$1}"
+                  end
                 end
 
                 # Fix CMYK images
