@@ -41,6 +41,15 @@ module Tootsie
               begin              
                 output = Output.new(version_options[:target_url])
                 begin
+                  if version_options[:strip_metadata]
+                    # This actually strips in-place, so no need to swap streams
+                    CommandRunner.new("id3v2 --delete-all '#{input.path}'").run do |line|
+                      if line.present? and line !~ /\AStripping id3 in.*stripped\./
+                        @logger.warn "ID3 stripping failed, ignoring: #{line}"
+                      end
+                    end
+                  end
+
                   adapter_options = version_options.dup
                   adapter_options.delete(:target_url)
                   if thumbnail_output

@@ -88,6 +88,7 @@ Video jobs have the `type` key set to either `video`, `audio`. Currently, `audio
   * `height`: desired video frame height in pixels.
   * `format`: File format.
   * `content_type`: Content type of resultant file. Tootsie will not be able to guess this at the moment.
+  * `strip_metadata`: If true, metadata such as ID3 will be deleted. Since recent ffmpeg versions have issues with ID3 tags and character encodings, this is recommended for audio files. Requires `id3v2` tool.
 
 Completion notification provides the following data:
 
@@ -188,6 +189,7 @@ Requirements
 For video jobs:
 
 * FFmpeg
+* id3v2 (optional)
 
 For image jobs:
 
