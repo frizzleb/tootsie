@@ -24,6 +24,7 @@ module Tootsie
       case @url
         when /^file:(.*)/
           FileUtils.cp(@temp_file.path, $1)
+          @result_url = @url
         when /^s3:.*/
           s3_options = S3Utilities.parse_uri(@url)
           bucket_name, path = s3_options[:bucket], s3_options[:key]
