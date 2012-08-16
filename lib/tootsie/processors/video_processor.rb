@@ -10,6 +10,7 @@ module Tootsie
         @thumbnail_options = (params[:thumbnail] || {}).with_indifferent_access
         @versions = [params[:versions] || {}].flatten
         @thread_count = Application.get.configuration.ffmpeg_thread_count
+        @logger = Application.get.logger
       end
     
       def valid?
@@ -43,8 +44,8 @@ module Tootsie
                 begin
                   if version_options[:strip_metadata]
                     # This actually strips in-place, so no need to swap streams
-                    CommandRunner.new("id3v2 --delete-all '#{input.path}'").run do |line|
-                      if line.present? and line !~ /\AStripping id3 in.*stripped\./
+                    CommandRunner.new("id3v2 --delete-all '#{input.file_name}'").run do |line|
+                      if line.present? and line !~ /\AStripping id3 tag in.*stripped\./
                         @logger.warn "ID3 stripping failed, ignoring: #{line}"
                       end
                     end
