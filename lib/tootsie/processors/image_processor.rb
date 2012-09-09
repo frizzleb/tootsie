@@ -116,7 +116,7 @@ module Tootsie
                 # Animations may contain more than one fram, if so discard the
                 # extra frames when outputting in a non-animation format
                 if original_format == 'gif' and version_options[:format] != 'gif'
-                  flags << ' -flatten -scene 1'
+                  convert_command << ' -flatten -scene 1'
                 end
 
                 if scale != :none
