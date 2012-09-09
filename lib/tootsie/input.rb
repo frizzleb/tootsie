@@ -28,7 +28,9 @@ module Tootsie
           s3_service = Tootsie::Application.get.s3_service
           begin
             File.open(@temp_file.path, 'wb') do |f|
-              f << s3_service.buckets.find(bucket_name).objects.find(path).content
+              object = s3_service.buckets.find(bucket_name).objects.find(path)
+              object.send(:get_object) unless object.content  # Work around issue with s3 gem
+              f << object.content
             end
           rescue ::S3::Error::NoSuchBucket, ::S3::Error::NoSuchKey
             raise InputNotFound, @url
