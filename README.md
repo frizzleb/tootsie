@@ -108,7 +108,7 @@ Image jobs have the `type` key set to `image`. The key `params` must be set to a
   * `height`: Optional desired height of output image.
   * `scale`: One of the following values:
     * `down` (default): The input image is scaled to fit within the dimensions `width` x `height`. If only `width` or only `height` is specified, then the other component will be computed from the aspect ratio of the input image.
-    * `up`: As `within`, but allow scaling to dimensions that are larger than the input image.
+    * `up`: As `fit`, but allow scaling to dimensions that are larger than the input image.
     * `fit`: Similar to `down`, but the dimensions are chosen so the output width and height are always met or exceeded. In other words, if you pass in an image that is 100x50, specifying output dimensions as 100x100, then the output image will be 150x100.
     * `none`: Don't scale at all.
   * `crop`: If true, crop the image to the output dimensions.
