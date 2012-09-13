@@ -155,7 +155,14 @@ module Tootsie
                   convert_command << " -auto-orient"
                 end
 
-                convert_command << " :input_file :output_file"
+                if original_format == 'gif' and output_format == 'gif'
+                  # Work around ImageMagick problem that screws up animations unless the
+                  # animation frames are "coalesced" first.
+                  convert_command = "convert -coalesce :input_file - | #{convert_command} - :output_file"
+                else
+                  convert_command << " :input_file :output_file"
+                end
+
                 CommandRunner.new(convert_command).run(convert_options)
                 
                 if version_options[:format] == 'png'
