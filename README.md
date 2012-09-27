@@ -270,12 +270,12 @@ The queue options is a hash with a key `adapter` telling Tootsie which queue imp
 
 The `sqs` adapter takes the following options:
 
-    queue_name: <name of queue, defaults to 'tootsie'>
+    queue: <name of queue, defaults to 'tootsie'>
     max_backoff: <max seconds to wait when queue is empty, defaults to 2>
 
 For the `amqp` adapter:
 
-    queue_name: <name of queue, defaults to 'tootsie'>
+    queue: <name of queue, defaults to 'tootsie'>
     host_name: <host name of AMQP server, defaults to localhost>
     max_backoff: <max seconds to wait when queue is empty, defaults to 2>
 
