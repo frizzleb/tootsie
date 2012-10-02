@@ -62,8 +62,9 @@ module Tootsie
       def with_reconnect(&block)
         begin
           result = yield
-        rescue Bunny::ServerDownError
-          @logger.error "Error connecting to AMQP server, retrying"
+        rescue Bunny::ServerDownError, Bunny::ConnectionError, Bunny::ProtocolError => e
+          @logger.error "Error in AMQP server connection (#{e.class}: #{e}), retrying"
+          sleep(0.5)
           connect!
           retry
         else
@@ -74,9 +75,8 @@ module Tootsie
       def with_retry(&block)
         begin
           result = yield
-        rescue Exception => exception
-          check_exception(exception)
-          @logger.error("Queue access failed with exception #{exception.class} (#{exception.message}), will retry")
+        rescue StandardError => e
+          @logger.error("Queue access failed with exception #{e.class} (#{e.message}), will retry")
           sleep(0.5)
           retry
         else
@@ -100,11 +100,6 @@ module Tootsie
         end
       end
 
-      def check_exception(exception)
-        raise exception if exception.is_a?(SystemExit)
-        raise exception if exception.is_a?(SignalException) and not exception.is_a?(Timeout::Error)
-      end
-    
   end
   
 end
