@@ -9,7 +9,6 @@ module Tootsie
       @logger = Application.get.logger
       @host_name = options[:host_name] || 'localhost'
       @queue_name = options[:queue_name] || 'tootsie'
-      connect!
     end
     
     def count
@@ -19,7 +18,7 @@ module Tootsie
     def push(item)
       data = item.to_json
       with_retry do
-        with_reconnect do
+        with_connection do
           @exchange.publish(data, :persistent => true, :key => @queue_name)
         end
       end
@@ -31,7 +30,7 @@ module Tootsie
         @backoff.with do
           message = nil
           with_retry do
-            with_reconnect do
+            with_connection do
               message = @queue.pop(:ack => true)
             end
           end
@@ -41,7 +40,7 @@ module Tootsie
             if data
               @logger.info "Popped: #{data.inspect}"
               item = JSON.parse(data)
-              with_reconnect do
+              with_connection do
                 @queue.ack(:delivery_tag => message[:delivery_details][:delivery_tag])
               end
             end
@@ -59,13 +58,14 @@ module Tootsie
 
     private
 
-      def with_reconnect(&block)
+      def with_connection(&block)
         begin
+          connect! unless @connection
           result = yield
         rescue Bunny::ServerDownError, Bunny::ConnectionError, Bunny::ProtocolError => e
           @logger.error "Error in AMQP server connection (#{e.class}: #{e}), retrying"
+          @connection = nil
           sleep(0.5)
-          connect!
           retry
         else
           result
@@ -90,7 +90,7 @@ module Tootsie
 
           @connection = Bunny.new(:host => @host_name)
           @connection.start
-          
+
           @exchange = @connection.exchange('')
 
           @queue = @connection.queue(@queue_name, :durable => true)
