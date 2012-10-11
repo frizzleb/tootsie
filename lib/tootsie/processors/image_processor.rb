@@ -113,10 +113,10 @@ module Tootsie
                   :output_file => "'#{output_format}:#{output.file_name}'"
                 }
 
-                # Animations may contain more than one fram, if so discard the
-                # extra frames when outputting in a non-animation format
-                if original_format == 'gif' and version_options[:format] != 'gif'
-                  convert_command << ' -flatten -scene 1'
+                if original_format != version_options[:format] and %(gif tiff).include?(original_format)
+                  # Remove additional frames (animation, TIFF thumbnails) not
+                  # supported by the output format
+                  convert_command << ' -delete "1-999" -flatten -scene 1'
                 end
 
                 if scale != :none
