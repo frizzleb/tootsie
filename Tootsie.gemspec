@@ -31,7 +31,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'unicorn', ['~> 4.1.1']
   s.add_runtime_dependency 'i18n', ['>= 0.4.2']
   s.add_runtime_dependency 'scashin133-syslog_logger', ['~> 1.7.3']
-  s.add_runtime_dependency 'airbrake', '~> 3.1.4'
+  s.add_runtime_dependency 'airbrake', '~> 3.1.8'
+  s.add_runtime_dependency 'pebblebed', '~> 0.0.42'
 
   s.add_development_dependency "rspec"
   s.add_development_dependency "rake"

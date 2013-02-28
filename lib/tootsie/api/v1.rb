@@ -11,6 +11,8 @@ module Tootsie
         config.set :show_exceptions, false
       end
 
+      register Sinatra::Pebblebed
+
       not_found do
         halt 404, "Not found"
       end

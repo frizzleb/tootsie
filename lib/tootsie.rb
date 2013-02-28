@@ -8,6 +8,7 @@ require 'json'
 require 'sqs'
 require 'timeout'
 require 'bunny'
+require 'pebblebed/sinatra'
 
 require 'tootsie/application'
 require 'tootsie/client'
