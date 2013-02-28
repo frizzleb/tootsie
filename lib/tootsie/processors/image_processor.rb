@@ -180,14 +180,8 @@ module Tootsie
 
                 CommandRunner.new(convert_command).run(convert_options)
 
-                if version_options[:format] == 'png'
-                  Tempfile.open('tootsie') do |file|
-                    # TODO: Make less sloppy
-                    file.write(File.read(output.file_name))
-                    file.close
-                    CommandRunner.new('pngcrush :input_file :output_file').run(
-                      :input_file => file.path, :output_file => output.file_name)
-                  end
+                if version_options[:format] == 'png' and Pngcrush.available?
+                  Pngcrush.process!(output.file_name)
                 end
 
                 output.content_type = version_options[:content_type] if version_options[:content_type]
