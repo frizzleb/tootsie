@@ -21,7 +21,11 @@ module Tootsie
         when String
           @logger = Logger.new(@configuration.log_path)
         else
-          @logger = Logger.new($stderr)
+          if defined?(LOGGER)
+            @logger = LOGGER  # Can be set externally to default to a global logger
+          else
+            @logger = Logger.new($stderr)
+          end
       end
       @logger.info "Starting"
 
@@ -55,6 +59,21 @@ module Tootsie
       return @s3_service ||= ::S3::Service.new(
         :access_key_id => @configuration.aws_access_key_id,
         :secret_access_key => @configuration.aws_secret_access_key)
+    end
+
+    # Handle exceptions in a block. Will log as appropriate.
+    def handle_exceptions(&block)
+      begin
+        yield
+      rescue => exception
+        if @logger.respond_to?(:exception)
+          # This allows us to plug in custom exception handling
+          @logger.exception(exception)
+        else
+          @logger.error("Exception caught: #{exception.class}: #{exception}")
+        end
+      end
+      nil
     end
 
     class << self

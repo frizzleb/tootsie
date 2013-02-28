@@ -4,8 +4,7 @@
 /log
 /tmp
 /trash
-/config/development.yml
-/config/production.yml
+/config
 .rvmrc
 *.sublime-project
 *.sublime-workspace

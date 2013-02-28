@@ -21,7 +21,7 @@ module Tootsie
     def run!
       @logger.info "Ready to process tasks"
       loop do
-        begin
+        Application.get.handle_exceptions do
           task = @queue.pop(:wait => true)
           if task
             task = task.with_indifferent_access
@@ -36,11 +36,6 @@ module Tootsie
               task.execute!
             end
           end
-        rescue Interrupt, SignalException, SystemExit
-          raise
-        rescue Exception => exception
-          backtrace = exception.backtrace.map { |s| "  #{s}\n" }.join
-          @logger.error "Task manager exception: #{exception.class}: #{exception}\n#{backtrace}"
         end
       end
       @logger.info "Task manager done"

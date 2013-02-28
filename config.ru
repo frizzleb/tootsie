@@ -1,3 +1,6 @@
+load File.expand_path("../boot.rb", __FILE__)
+
+require 'tootsie'
 config_path = ENV['TOOTSIE_CONFIG']
 unless config_path
   local_config_path = File.expand_path("../config/tootsie.conf", __FILE__)
@@ -7,13 +10,6 @@ unless config_path
     config_path = '/etc/tootsie/tootsie.conf'
   end
 end
-
-site_config_path = File.expand_path("../config/site.rb", __FILE__)
-if File.exist?(site_config_path)
-  load(site_config_path)
-end
-
-require 'tootsie'
 Tootsie::Application.configure!(config_path)
 
 # New API location.
