@@ -171,25 +171,25 @@ Video jobs have the `type` key set to either `video`, `audio`. Currently, `audio
 
 * `input_url`: URL to input file, either an HTTP URL or an S3 URL (see below).
 * `versions`: Either a hash or an array of such hashes, each with the following keys:
-  * `target_url`: URL to output resource, either an HTTP URL which accepts POSTs, or an S3 URL.
-  * `thumbnail`: If specified, a thumbnail will be generated based on the options in this hash with the following keys:
     * `target_url`: URL to output resource, either an HTTP URL which accepts POSTs, or an S3 URL.
-    * `width`: Desired width of thumbnail, defaults to output width.
-    * `height`: Desired height of thumbnail, defaults to output height.
-    * `at_seconds`: Desired point (in seconds) at which the thumbnail frame should be captured. Defaults to 50% into stream.
-    * `at_fraction`: Desired point (in percentage) at which the thumbnail frame should be captured. Defaults to 50% into stream.
-    * `force_aspect_ratio`: If `true`, force aspect ratio; otherwise aspect is preserved when computing dimensions.
-  * `audio_sample_rate`: Audio sample rate, in hertz.
-  * `audio_bitrate`: Audio bitrate, in bits per second.
-  * `audio_codec`: Audio codec name, eg. `mp4`.
-  * `video_frame_rate`: video frame rate, in hertz.
-  * `video_bitrate`: video bitrate, in bits per second.
-  * `video_codec`: video codec name, eg. `mp4`.
-  * `width`: desired video frame width in pixels.
-  * `height`: desired video frame height in pixels.
-  * `format`: File format.
-  * `content_type`: Content type of resultant file. Tootsie will not be able to guess this at the moment.
-  * `strip_metadata`: If true, metadata such as ID3 will be deleted. Since recent ffmpeg versions have issues with ID3 tags and character encodings, this is recommended for audio files. Requires `id3v2` tool.
+    * `thumbnail`: If specified, a thumbnail will be generated based on the options in this hash with the following keys:
+        * `target_url`: URL to output resource, either an HTTP URL which accepts POSTs, or an S3 URL.
+        * `width`: Desired width of thumbnail, defaults to output width.
+        * `height`: Desired height of thumbnail, defaults to output height.
+        * `at_seconds`: Desired point (in seconds) at which the thumbnail frame should be captured. Defaults to 50% into stream.
+        * `at_fraction`: Desired point (in percentage) at which the thumbnail frame should be captured. Defaults to 50% into stream.
+        * `force_aspect_ratio`: If `true`, force aspect ratio; otherwise aspect is preserved when computing dimensions.
+    * `audio_sample_rate`: Audio sample rate, in hertz.
+    * `audio_bitrate`: Audio bitrate, in bits per second.
+    * `audio_codec`: Audio codec name, eg. `mp4`.
+    * `video_frame_rate`: video frame rate, in hertz.
+    * `video_bitrate`: video bitrate, in bits per second.
+    * `video_codec`: video codec name, eg. `mp4`.
+    * `width`: desired video frame width in pixels.
+    * `height`: desired video frame height in pixels.
+    * `format`: File format.
+    * `content_type`: Content type of resultant file. Tootsie will not be able to guess this at the moment.
+    * `strip_metadata`: If true, metadata such as ID3 will be deleted. Since recent ffmpeg versions have issues with ID3 tags and character encodings, this is recommended for audio files. Requires `id3v2` tool.
 
 Completion notification provides the following data:
 
@@ -203,20 +203,20 @@ Image jobs have the `type` key set to `image`. The key `params` must be set to a
 
 * `input_url`: URL to input file, either an HTTP URL, `file:/path` URL or an S3 URL (see below).
 * `versions`: Either a hash or an array of such hashes, each with the following keys:
-  * `target_url`: URL to output resource, either an HTTP URL, `file:/path` URL which accepts POSTs, or an S3 URL.
-  * `width`: Optional desired width of output image.
-  * `height`: Optional desired height of output image.
-  * `scale`: One of the following values:
-    * `down` (default): The input image is scaled to fit within the dimensions `width` x `height`. If only `width` or only `height` is specified, then the other component will be computed from the aspect ratio of the input image.
-    * `up`: As `fit`, but allow scaling to dimensions that are larger than the input image.
-    * `fit`: Similar to `down`, but the dimensions are chosen so the output width and height are always met or exceeded. In other words, if you pass in an image that is 100x50, specifying output dimensions as 100x100, then the output image will be 150x100.
-    * `none`: Don't scale at all.
-  * `crop`: If true, crop the image to the output dimensions.
-  * `format`: Either `jpeg`, `png` or `gif`.
-  * `quality`: A quality value between 0.0 and 1.0 which will be translated to a compression level depending on the output coding. The default is 1.0.
-  * `strip_metadata`: If true, metadata such as EXIF and IPTC will be deleted. For thumbnails, this often reduces the file size considerably.
-  * `medium`: If `web`, the image will be optimized for web usage. See below for details.
-  * `content_type`: Content type of resultant file. The system will be able to guess basic types such as `image/jpeg`.
+    * `target_url`: URL to output resource, either an HTTP URL, `file:/path` URL which accepts POSTs, or an S3 URL.
+    * `width`: Optional desired width of output image.
+    * `height`: Optional desired height of output image.
+    * `scale`: One of the following values:
+        * `down` (default): The input image is scaled to fit within the dimensions `width` x `height`. If only `width` or only `height` is specified, then the other component will be computed from the aspect ratio of the input image.
+        * `up`: As `fit`, but allow scaling to dimensions that are larger than the input image.
+        * `fit`: Similar to `down`, but the dimensions are chosen so the output width and height are always met or exceeded. In other words, if you pass in an image that is 100x50, specifying output dimensions as 100x100, then the output image will be 150x100.
+        * `none`: Don't scale at all.
+    * `crop`: If true, crop the image to the output dimensions.
+    * `format`: Either `jpeg`, `png` or `gif`.
+    * `quality`: A quality value between 0.0 and 1.0 which will be translated to a compression level depending on the output coding. The default is 1.0.
+    * `strip_metadata`: If true, metadata such as EXIF and IPTC will be deleted. For thumbnails, this often reduces the file size considerably.
+    * `medium`: If `web`, the image will be optimized for web usage. See below for details.
+    * `content_type`: Content type of resultant file. The system will be able to guess basic types such as `image/jpeg`.
 
 Note that scaling always preserves the aspect ratio of the original image; in other words, if the original is 100 x 200, then passing the dimensions 100x100 will produce an image that is 50x100. Enabling cropping, however, will force the aspect ratio of the specified dimensions.
 
@@ -228,7 +228,7 @@ If the option `medium` specifies `web`, the following additional transformations
 Completion notification provides the following data:
 
 * `outputs` contains an array of results. Each is a hash with the following keys:
-  * `url`: URL for the completed file.
+    * `url`: URL for the completed file.
 * `metadata`: image metadata as a hash. These are raw EXIF and IPTC data from ImageMagick.
 * `width`: width, in pixels, of original image.
 * `height`: height, in pixels, of original image.
