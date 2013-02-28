@@ -76,7 +76,9 @@ module Tootsie
                 medium = version_options[:medium]
                 medium &&= medium.to_sym
 
-                new_width, new_height = version_options[:width], version_options[:height]
+                new_width, new_height =
+                  version_options[:width].try(:to_i),
+                  version_options[:height].try(:to_i)
                 if new_width
                   new_height ||= (new_width * original_aspect).ceil
                 elsif new_height
