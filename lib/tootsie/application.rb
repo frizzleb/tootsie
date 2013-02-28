@@ -1,13 +1,13 @@
 module Tootsie
-    
+
   class Application
-    
+
     def initialize(options = {})
       @@instance = self
       @logger = Logger.new('/dev/null')
       @configuration = Configuration.new
     end
-    
+
     def configure!(config_path)
       @configuration.load_from_file(config_path)
       case @configuration.log_path
@@ -43,7 +43,7 @@ module Tootsie
 
       @task_manager = TaskManager.new(@queue)
     end
-    
+
     def s3_service
       abort "AWS access key and secret required" unless
         @configuration.aws_access_key_id and @configuration.aws_secret_access_key
@@ -51,18 +51,18 @@ module Tootsie
         :access_key_id => @configuration.aws_access_key_id,
         :secret_access_key => @configuration.aws_secret_access_key)
     end
-    
+
     class << self
       def get
         @@instance
       end
     end
-        
+
     attr_reader :configuration
     attr_reader :task_manager
     attr_reader :queue
     attr_reader :logger
-    
+
   end
-  
+
 end

@@ -1,13 +1,13 @@
 module Tootsie
-  
+
   class Configuration
-    
+
     def initialize
       @ffmpeg_thread_count = 1
       @worker_count = 4
       @queue_options = {}
     end
-    
+
     def load_from_file(file_name)
       config = (YAML.load(File.read(file_name)) || {}).with_indifferent_access
       [:ffmpeg_thread_count, :worker_count, :pid_path, :log_path,
@@ -25,7 +25,7 @@ module Tootsie
       @queue_options[:adapter] ||= 'sqs'
       @queue_options[:queue] ||= config[:sqs_queue_name]
     end
-    
+
     attr_accessor :queue_options
     attr_accessor :ffmpeg_thread_count
     attr_accessor :pid_path
@@ -33,7 +33,7 @@ module Tootsie
     attr_accessor :worker_count
     attr_accessor :aws_secret_access_key
     attr_accessor :aws_access_key_id
-    
+
   end
-  
+
 end

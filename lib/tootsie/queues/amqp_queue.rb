@@ -2,7 +2,7 @@ module Tootsie
 
   # A queue which uses the AMQP protocol.
   class AmqpQueue
-    
+
     def initialize(options = {})
       options.assert_valid_keys(:host_name, :queue_name, :max_backoff)
       @backoff = Utility::Backoff.new(:max => options[:max_backoff])
@@ -10,11 +10,11 @@ module Tootsie
       @host_name = options[:host_name] || 'localhost'
       @queue_name = options[:queue_name] || 'tootsie'
     end
-    
+
     def count
       nil
     end
-    
+
     def push(item)
       data = item.to_json
       with_retry do
@@ -23,7 +23,7 @@ module Tootsie
         end
       end
     end
-    
+
     def pop(options = {})
       item = nil
       loop do
@@ -101,5 +101,5 @@ module Tootsie
       end
 
   end
-  
+
 end
