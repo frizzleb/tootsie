@@ -291,7 +291,6 @@ Current limitations
 * Transcoding options are very basic.
 * No client access control; anyone can submit jobs.
 * SQS: Due to limitations in the `sqs` gem, only US queues may be used at the moment.
-* AMQP adapter does not support measuring the queue length at the moment.
 * No window support.
 
 License

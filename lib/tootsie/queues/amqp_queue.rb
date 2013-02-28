@@ -12,7 +12,9 @@ module Tootsie
     end
 
     def count
-      nil
+      if @queue && (status = @queue.status)
+        status[:message_count]
+      end
     end
 
     def push(item)
