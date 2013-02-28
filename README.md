@@ -45,7 +45,7 @@ Dependencies
 
 * Amazon S3 account, for loading and storage of files.
 * AMQP-compliant server (such as RabbitMQ) or Amazon Simple Queue Service for internal task queue management.
-* [Airbrake](https://airbrake.io/pages/home) or [Errbit](https://github.com/errbit/errbit) API keys, for logging exceptions.
+* [Airbrake](https://airbrake.io/pages/home) or [Errbit](https://github.com/errbit/errbit), for logging exceptions.
 
 Installation
 ------------
