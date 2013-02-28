@@ -118,7 +118,7 @@ The configuration is a YAML document with the following keys:
 
 ### Airbrake
 
-To enable [Airbrake](https://airbrake.io/pages/home) reporting (which also works with [Errbit](https://github.com/errbit/errbit)), add each configuration option under the `airbrake` key. Keys include `api_key`, `host` and so on. Consult the [`airbrake` gem](https://github.com/airbrake/airbrake) for the full list of configuration keys.
+To enable [Airbrake](https://airbrake.io/pages/home) reporting (which also works with [Errbit](https://github.com/errbit/errbit)), add each configuration option under the `airbrake` key. Keys include `api_key`, `host` and so on. Consult the [airbrake gem](https://github.com/airbrake/airbrake) for the full list of configuration keys.
 
 ### SQS
 
