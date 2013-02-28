@@ -55,7 +55,7 @@ Installation
 Running
 -------
 
-Create a configuration, eg. `tootsie.conf`:
+Create a YAML configuration file. Call it something like `tootsie.conf`:
 
     --- 
       queue:
@@ -67,7 +67,7 @@ Create a configuration, eg. `tootsie.conf`:
       log_path: <where to write log file>
       worker_count: <number of workers>
 
-Start the job manager with `tootsie -c tootsie.conf`. It will stay in the foreground unless you provide `-d`.
+Start the job manager with `tootsie -c tootsie.conf`. (It will stay in the foreground unless you provide `-d`.)
 
 Now create a rackup file, and call it `config.ru`:
 
@@ -111,16 +111,14 @@ The configuration is a YAML document with the following keys:
 * `log_path`: Where to write log file.
 * `worker_count`: Number of workers. Must be at least 1.
 * `queue`:
-    * `adapter`: <adapter>
-    * ... queue options ...
+    * `adapter`: Name of queue implementation to use; one of `sqs` (Amazon SQS), `amqp` (AMQP, such as RabbitMQ) or `file` (local file system, not recommended except for casual testing).
+    * [*queue options*]
 * `airbrake`:
-    * ... options for Airbrake ...
-
-The `adapter` key says which queue implementation to use and may be one of `sqs` (Amazon SQS), `amqp` (AMQP, such as RabbitMQ) or `file` (local file system, not recommended except for casual testing).
+    * [*options for Airbrake*]
 
 ### Airbrake
 
-To enable [Airbrake](https://airbrake.io/pages/home) reporting (which also works with [Errbit](https://github.com/errbit/errbit)), add each configuration option to the `airbrake` key. Keys include `api_key`, `host` and so on.
+To enable [Airbrake](https://airbrake.io/pages/home) reporting (which also works with [Errbit](https://github.com/errbit/errbit)), add each configuration option under the `airbrake` key. Keys include `api_key`, `host` and so on.
 
 ### SQS
 
@@ -152,7 +150,7 @@ For the `file` adapter:
 API
 ---
 
-To schedule jobs, one uses the REST service:
+To schedule jobs, one uses the REST API:
 
 * `POST /api/tootsie/v1/jobs`: Schedule a new job. Returns 201 if the job was created.
 * `GET /api/tootsie/v1/status`: Get some current processing status as a JSON hash.
@@ -176,7 +174,7 @@ Supported outputs:
 * HTTP resource. The encoded file will be `POST`ed to a URL.
 * Amazon S3 bucket resource. Tootsie will need write permissions to any S3 buckets.
 
-Each job may have multiple outputs given a single input. Designwise, the reason for doing this -- as opposed to requiring that the client submit multiple jobs, one for each output -- is twofold:
+Each job may have multiple outputs given a single input. Design-wise, the reason for doing this — as opposed to requiring that the client submit multiple jobs, one for each output — is twofold:
 
 1. It allows the job to cache the input data locally for the duration of the job, rather than fetching it multiple times. One could suppose that multiple jobs could share the same cached input, but this would be awkward in a distributed setting where each node has its own file system; in such a case, a shared storage mechanism (file system, database or similar) would be needed.
 
@@ -215,8 +213,8 @@ Video jobs have the `type` key set to either `video`, `audio`. Currently, `audio
 Completion notification provides the following data:
 
 * `outputs` contains an array of results. Each is a hash with the following keys:
-  * `url`: the completed file.
-  * `metadata`: image metadata as a hash. These are raw EXIF and IPTC data from ImageMagick.
+    * `url`: the completed file.
+    * `metadata`: image metadata as a hash. These are raw EXIF and IPTC data from ImageMagick.
 
 ### Image transcoding jobs
 
@@ -228,7 +226,7 @@ Image jobs have the `type` key set to `image`. The key `params` must be set to a
     * `width`: Optional desired width of output image.
     * `height`: Optional desired height of output image.
     * `scale`: One of the following values:
-        * `down` (default): The input image is scaled to fit within the dimensions `width` x `height`. If only `width` or only `height` is specified, then the other component will be computed from the aspect ratio of the input image.
+        * `down` (default): The input image is scaled to fit within the dimensions `width` x `height`, giving priority to the width. If only `width` or only `height` is specified, then the other component will be computed from the aspect ratio of the input image.
         * `up`: As `fit`, but allow scaling to dimensions that are larger than the input image.
         * `fit`: Similar to `down`, but the dimensions are chosen so the output width and height are always met or exceeded. In other words, if you pass in an image that is 100x50, specifying output dimensions as 100x100, then the output image will be 150x100.
         * `none`: Don't scale at all.
@@ -239,7 +237,7 @@ Image jobs have the `type` key set to `image`. The key `params` must be set to a
     * `medium`: If `web`, the image will be optimized for web usage. See below for details.
     * `content_type`: Content type of resultant file. The system will be able to guess basic types such as `image/jpeg`.
 
-Note that scaling always preserves the aspect ratio of the original image; in other words, if the original is 100 x 200, then passing the dimensions 100x100 will produce an image that is 50x100. Enabling cropping, however, will force the aspect ratio of the specified dimensions.
+Note that scaling always preserves the aspect ratio of the original image; in other words, if the original is 100x200, then passing the dimensions 100x100 will produce an image that is 50x100. Enabling cropping, however, will force the aspect ratio of the specified dimensions.
 
 If the option `medium` specifies `web`, the following additional transformations will be performed:
 
@@ -255,9 +253,9 @@ Completion notification provides the following data:
 * `height`: height, in pixels, of original image.
 * `depth`: depth, in bits, of original image.
 
-### Notifications
+### Notification hook
 
-If a notification URL is provided, events will be sent to it using `POST` requests as JSON data. These are 'fire and forget' and will currently not be retried on failure, and the response status code is ignored.
+If a notification hook URL is provided, events will be sent to it using `POST` requests as JSON data. These are 'fire and forget' and will not be retried on failure, and the response status code is ignored.
 
 There are several types of events, indicated by the `event` key:
 
@@ -276,9 +274,9 @@ To specify S3 URLs, we use a custom URI format:
 
 The components are:
 
-* bucketname: The name of the S3 bucket.
-* /path/to/file: The actual S3 key.
-* options: Optional parameters for storage, an URL query string.
+* `bucketname`: The name of the S3 bucket.
+* `/path/to/file`: The actual S3 key.
+* `options`: Optional parameters for storage, an URL query string.
 
 The options are:
 
@@ -295,7 +293,6 @@ Example S3 URLs:
 Current limitations
 -------------------
 
-* Transcoding options are very basic.
 * No client access control; anyone can submit jobs.
 * SQS: Due to limitations in the `sqs` gem, only US queues may be used at the moment.
 * No Windows support.
