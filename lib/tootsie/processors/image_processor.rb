@@ -7,7 +7,7 @@ module Tootsie
         @input_url = params[:input_url]
         @versions = [params[:versions] || {}].flatten
         @logger = Application.get.logger
-        @extractor = ImageMetadataExtractor.new(:logger => @logger)
+        @extractor = Exiv2MetadataExtractor.new
       end
 
       def valid?

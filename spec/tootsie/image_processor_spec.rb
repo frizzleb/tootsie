@@ -6,75 +6,29 @@ include Tootsie::Processors
 
 describe ImageProcessor do
 
-  describe 'metadata' do
-    it 'returns basic metadata from the original image' do
+  describe 'image information' do
+    it 'returns basic information from the original image' do
       result, contents = process_image_version('landscape.jpeg', {})
       result[:width].should eq 360
       result[:height].should eq 240
       result[:depth].should eq 8
     end
+  end
 
-    it "returns EXIF and IPTC metadata from the original image that has such metadata" do
+  describe 'metadata' do
+    before do
+      Tootsie::Exiv2MetadataExtractor.any_instance.should_receive(:extract_from_file)
+      Tootsie::Exiv2MetadataExtractor.any_instance.stub(:extract_from_file) { |file_name|
+        file_name.should == test_file_path("iptc_xmp.jpeg")
+        {'Exif.Image.XResolution' => 666}
+      }
+    end
+
+    it 'returns metadata as part of image processing' do
       result, contents = process_image_version('iptc_xmp.jpeg', {})
       metadata = result[:metadata]
       metadata.should be_a_kind_of(Hash)
-
-      %w(
-        Exif.Image.ImageDescription
-        Exif.Image.Orientation
-        Exif.Image.XResolution
-        Exif.Image.YResolution
-        Exif.Image.ResolutionUnit
-        Exif.Image.Software
-        Exif.Image.DateTime
-        Exif.Image.Artist
-        Exif.Image.Copyright
-        Exif.Image.ExifTag
-        Exif.Photo.ColorSpace
-        Exif.Photo.PixelXDimension
-        Exif.Photo.PixelYDimension
-        Exif.Thumbnail.Compression
-        Exif.Thumbnail.XResolution
-        Exif.Thumbnail.YResolution
-        Exif.Thumbnail.ResolutionUnit
-
-        Iptc.Application2.RecordVersion
-        Iptc.Application2.Caption
-        Iptc.Application2.Writer
-        Iptc.Application2.Headline
-        Iptc.Application2.SpecialInstructions
-        Iptc.Application2.Byline
-        Iptc.Application2.BylineTitle
-        Iptc.Application2.Credit
-        Iptc.Application2.Source
-        Iptc.Application2.ObjectName
-        Iptc.Application2.DateCreated
-        Iptc.Application2.City
-        Iptc.Application2.ProvinceState
-        Iptc.Application2.CountryName
-        Iptc.Application2.TransmissionReference
-        Iptc.Application2.Keywords
-        Iptc.Application2.Copyright
-      ).each do |key|
-        metadata.should have_key(key)
-        if metadata[key].is_a?(Array)
-          metadata[key].each do |value|
-            value.should be_a_kind_of(Hash)
-            value.should have_key(:value)
-            value.should have_key(:type)
-            %w(
-              short rational long ascii string xmp_text xmp_bag xmp_seq date
-            ).should include(value[:type])
-          end
-        else
-          metadata[key].should be_a_kind_of(Hash)
-          metadata[key].should have_key(:value)
-          metadata[key].should have_key(:type)
-          %w(
-            short rational long ascii string xmp_text xmp_bag xmp_seq date
-          ).should include(metadata[key][:type])
-        end
-      end
+      metadata['Exif.Image.XResolution'].should eq 666
     end
   end
 

@@ -1,12 +1,15 @@
-require 'time'
-
 module Tootsie
 
-  class ImageMetadataExtractor
+  # Uses external exiv2 tool.
+  class Exiv2MetadataExtractor
 
-    def initialize(options = {})
-      @logger = options[:logger]
+    def initialize
       @metadata = {}
+    end
+
+    def self.available?
+      IO.popen("exiv2 --help >/dev/null 2>&1", 'r') { |f| f.read }
+      $?.exitstatus == 0
     end
 
     def extract_from_file(file_name)
@@ -47,9 +50,7 @@ module Tootsie
                 begin
                   value = Time.parse(value)
                 rescue Exception => e
-                  if @logger
-                    @logger.warn "Invalid time format in EXIF data, ignoring value: #{value.inspect}"
-                  end
+                  logger.warn "Invalid time format in EXIF data, ignoring value: #{value.inspect}"
                   value = nil
                 end
               else
@@ -72,9 +73,7 @@ module Tootsie
             begin
               value = value.encode('utf-8', 'iso-8859-1')
             rescue EncodingError
-              if @logger
-                @logger.warn "Invalid characters in EXIF data that are neither UTF-8 nor ISO-8859-1, ignoring it: #{value.inspect}"
-              end
+              logger.warn "Invalid characters in EXIF data that are neither UTF-8 nor ISO-8859-1, ignoring it: #{value.inspect}"
               value = nil
             end
           end
@@ -86,9 +85,7 @@ module Tootsie
             begin
               value = Iconv.iconv("utf-8", "iso-8859-1", value)[0]
             rescue Exception => e
-              if @logger
-                @logger.warn "Invalid encoding in EXIF data, ignoring value: #{value.inspect}"
-              end
+              logger.warn "Invalid encoding in EXIF data, ignoring value: #{value.inspect}"
               value = nil
             end
           end
@@ -96,5 +93,10 @@ module Tootsie
         value
       end
 
+      def logger
+        Application.get.logger
+      end
+
   end
+
 end
