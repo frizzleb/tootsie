@@ -70,7 +70,9 @@ Now create a rackup file, and call it `config.ru`:
 
     require 'tootsie'
     Tootsie::Application.new.configure!('tootsie.conf')
-    run Tootsie::WebService
+    map '/api/tootsie/v1' do
+      run Tootsie::WebService
+    end
 
 To run the web service, you will need a Rack-compatible web server, such as Unicorn or Thin. To start with Thin on port 9090:
 
@@ -78,7 +80,7 @@ To run the web service, you will need a Rack-compatible web server, such as Unic
 
 Jobs may now be posted to the web service API. For example:
 
-    $ cat << END | curl -d @- http://localhost:9090/job
+    $ cat << END | curl -XPOST -d @- http://localhost:9090/api/tootsie/v1/jobs
     {
       "type": "video",
       "notification_url": "http://example.com/transcoder_notification",
@@ -132,8 +134,8 @@ API
 
 To schedule jobs, one uses the REST service:
 
-* POST `/job`: Schedule a job. Returns 201 if the job was created.
-* GET `/status`: Get current processing status as a JSON hash.
+* POST `/api/tootsie/v1/jobs`: Schedule a new job. Returns 201 if the job was created.
+* GET `/api/tootsie/v1/status`: Get some current processing status as a JSON hash.
 
 The job must be posted as an JSON hash with the content type `application/json`. Common to all job scheduling POSTs are these keys:
 

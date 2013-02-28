@@ -3,14 +3,11 @@ require 'sinatra/base'
 module Tootsie
 
   class WebService < Sinatra::Base
+
     set :sessions, false
     set :run, false
 
-    get '/' do
-      404
-    end
-
-    post '/job' do
+    post %r{/job(s)?/?} do
       job_data = JSON.parse(request.env["rack.input"].read)
       logger.info "Handling job: #{job_data.inspect}"
       job = Tasks::JobTask.new(job_data)
