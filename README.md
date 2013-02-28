@@ -5,12 +5,14 @@ Tootsie (formerly called Tranz) is a simple, robust, scalable audio/video/image 
 
 Tootsie can transcode audio, video and images between different formats, and also perform basic manipulations such as photo scaling and cropping, for generating thumbnails and photos at different resolutions.
 
+For integrating into web apps, we recommend [Tiramisu](http://github.com/bengler/tiramisu), which is written specifically for Tootsie.
+
 Overview
 --------
 
 Tootsie is divided into multiple independent parts:
 
-### API web worker
+### API
 
 The API providers a simple way to submit new jobs.
 
@@ -57,14 +59,14 @@ Create a configuration, eg. `tootsie.conf`:
     --- 
       queue:
         adapter: sqs
-        queue: tootise
+        queue: tootsie
       aws_access_key_id: <your Amazon key>
       aws_secret_access_key: <your Amazon secret>
       pid_path: <where to write pid file>
       log_path: <where to write log file>
       worker_count: <number of workers>
 
-Start the task manager with `tootsie -c tootsie.conf`.
+Start the job manager with `tootsie -c tootsie.conf`. It will stay in the foreground unless you provide `-d`.
 
 Now create a rackup file, and call it `config.ru`:
 
@@ -74,13 +76,13 @@ Now create a rackup file, and call it `config.ru`:
       run Tootsie::WebService
     end
 
-To run the web service, you will need a Rack-compatible web server, such as Unicorn or Thin. To start with Thin on port 9090:
+To run the web service, you will need a Rack-compatible web server, such as Unicorn. To start Unicorn on port 8080:
 
-    $ thin --daemonize --rackup config.ru --port 9090 start
+    $ unicorn config.ru
 
 Jobs may now be posted to the web service API. For example:
 
-    $ cat << END | curl -XPOST -d @- http://localhost:9090/api/tootsie/v1/jobs
+    $ cat << END | curl -XPOST -d @- http://localhost:8080/api/tootsie/v1/jobs
     {
       "type": "video",
       "notification_url": "http://example.com/transcoder_notification",
@@ -102,48 +104,58 @@ Configuration
 
 The configuration is a YAML document with the following keys:
 
-    aws_access_key_id: <your Amazon key>
-    aws_secret_access_key: <your Amazon secret>
-    pid_path: <where to write pid file>
-    log_path: <where to write log file>
-    worker_count: <number of workers>
-    queue:
-      <... queue options ...>
+* `aws_access_key_id`: Your Amazon key.
+* `aws_secret_access_key`: Your Amazon secret.
+* `pid_path`: Where to write pid file.
+* `log_path`: Where to write log file.
+* `worker_count`: Number of workers. Must be at least 1.
+* `queue`:
+    * `adapter`: <adapter>
+    * ... queue options ...
 
-The queue options is a hash with a key `adapter` telling Tootsie which queue implementation to use.
+The `adapter` key says which queue implementation to use and may be one of `sqs` (Amazon SQS), `amqp` (AMQP, such as RabbitMQ) or `file` (local file system, not recommended except for casual testing).
+
+### SQS
 
 The `sqs` adapter takes the following options:
 
-    queue: <name of queue, defaults to 'tootsie'>
-    max_backoff: <max seconds to wait when queue is empty, defaults to 2>
+* `queue`: The name of queue, defaults to `tootsie`.
+* `max_backoff`: Max seconds to wait when queue is empty, defaults to 2.
+
+Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.
+
+Using SQS requires that you provide `aws_access_key_id` and `aws_secret_access_key` in the main config.
+
+### AMQP
 
 For the `amqp` adapter:
 
-    queue: <name of queue, defaults to 'tootsie'>
-    host_name: <host name of AMQP server, defaults to localhost>
-    max_backoff: <max seconds to wait when queue is empty, defaults to 2>
+* `queue`: The name of the queue, defaults to `tootsie`.
+* `host_name`: Host name of AMQP server, defaults to `localhost`.
+* `max_backoff`: Max seconds to wait when queue is empty, defaults to 2.
+
+Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.
+
+### File
 
 For the `file` adapter:
 
     root: <directory to store files>
-
-Note that when running a large number of workers, you should increase the backoff interval to avoid incurring a lot of queue requests.
 
 API
 ---
 
 To schedule jobs, one uses the REST service:
 
-* POST `/api/tootsie/v1/jobs`: Schedule a new job. Returns 201 if the job was created.
-* GET `/api/tootsie/v1/status`: Get some current processing status as a JSON hash.
+* `POST /api/tootsie/v1/jobs`: Schedule a new job. Returns 201 if the job was created.
+* `GET /api/tootsie/v1/status`: Get some current processing status as a JSON hash.
 
-The job must be posted as an JSON hash with the content type `application/json`. Common to all job scheduling POSTs are these keys:
+The job must be posted as an JSON hash with the content type `application/json`. Common to all jobs are these keys:
 
 * `type`: Type of job. See sections below for details.
 * `notification_url`: Optional notification URL. Progress (including completion and failure) will be reported using POSTs.
 * `retries`: Maximum number of retries, if any. Defaults to 5.
-
-Job-specific parameters are provided in the key `params`.
+* `params`: Job-type-specific parameters.
 
 The Tootsie daemon pops jobs from a queue and processes them. Each job specifies an input, an output, and transcoding parameters. Optionally the job may also specify a notification URL which is invoked to inform the caller about job progress.
 
