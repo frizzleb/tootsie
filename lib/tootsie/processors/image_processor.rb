@@ -60,6 +60,7 @@ module Tootsie
                   output_format.gsub!(/[^\w]/, '')
                 end
                 output_format ||= original_format
+                result[:format] = output_format
 
                 # Correct for EXIF orientation
                 if [5, 6, 7, 8].include?(original_orientation)
