@@ -6,8 +6,7 @@ describe Tootsie::ImageMetadataExtractor do
 
   it 'should read EXIF data' do
     extractor = Tootsie::ImageMetadataExtractor.new
-    extractor.extract_from_file(
-      File.expand_path('../../test_files/BF 0622 1820.tif', __FILE__))
+    extractor.extract_from_file(test_file_path('iptc.tiff'))
     extractor.metadata['Exif.Image.ImageWidth'][:type].should == 'short'
     extractor.metadata['Exif.Image.ImageWidth'][:value].should == 10
     extractor.metadata['Exif.Image.ImageLength'][:type].should == 'short'
@@ -18,8 +17,7 @@ describe Tootsie::ImageMetadataExtractor do
 
   it 'should read IPTC data' do
     extractor = Tootsie::ImageMetadataExtractor.new
-    extractor.extract_from_file(
-      File.expand_path('../../test_files/BF 0622 1820.tif', __FILE__))
+    extractor.extract_from_file(test_file_path('iptc.tiff'))
     extractor.metadata['Iptc.Application2.City'][:type].should == 'string'
     extractor.metadata['Iptc.Application2.City'][:value].should == 'Krødsherad'
     extractor.metadata['Iptc.Application2.ObjectName'][:type].should == 'string'
@@ -28,8 +26,7 @@ describe Tootsie::ImageMetadataExtractor do
 
   it 'should read XMP data' do
     extractor = Tootsie::ImageMetadataExtractor.new
-    extractor.extract_from_file(
-      File.expand_path('../../test_files/BF 0622 1820.tif', __FILE__))
+    extractor.extract_from_file(test_file_path('iptc.tiff'))
     extractor.metadata['Xmp.dc.description'][:type].should == 'lang_alt'
     extractor.metadata['Xmp.dc.description'][:value].should == 'lang="x-default" Tømmer på vannet ved Krøderen'
     extractor.metadata['Xmp.tiff.YResolution'][:type].should == 'xmp_text'

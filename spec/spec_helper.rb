@@ -17,5 +17,15 @@ require 'rspec/autorun'
 require 'pp'
 require 'tootsie'
 
+Dir.glob(File.expand_path('../helpers/*.rb', __FILE__)).each do |f|
+  require f
+end
+
 # Ensure application exists
 Tootsie::Application.new
+
+RSpec.configure do |config|
+  config.mock_with :rspec
+  config.include ImageHelper
+  config.include FileHelper
+end
