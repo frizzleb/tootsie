@@ -87,28 +87,27 @@ module Tootsie
                   new_width, new_height = original_width, original_height
                 end
 
-                scale_width, scale_height = new_width, new_height
                 scale = (version_options[:scale] || 'down').to_sym
                 case scale
-                  when :up, :none
-                    # Do nothing
                   when :down
-                    if scale_width > original_width
+                    if new_width > original_width
                       scale_width = original_width
-                      scale_height = (scale_width * original_aspect).ceil
-                    elsif scale_height > original_height
+                      scale_height = (original_width * original_aspect).ceil
+                    elsif new_height > original_height
                       scale_height = original_height
-                      scale_width = (scale_height / original_aspect).ceil
+                      scale_width = (original_height / original_aspect).ceil
                     end
                   when :fit
-                    if (scale_width * original_aspect).ceil < new_height
+                    if (new_width * original_aspect).ceil < new_height
                       scale_height = new_height
                       scale_width = (new_height / original_aspect).ceil
-                    elsif (scale_height / original_aspect).ceil < new_width
+                    elsif (new_height / original_aspect).ceil < new_width
                       scale_width = new_width
-                      scale_height = (scale_width * original_aspect).ceil
+                      scale_height = (new_width * original_aspect).ceil
                     end
                 end
+                scale_width ||= new_width
+                scale_height ||= new_height
 
                 convert_command = "convert"
                 convert_options = {
