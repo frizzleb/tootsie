@@ -121,6 +121,11 @@ module Tootsie
                   convert_command << ' -delete "1-999" -flatten -scene 1'
                 end
 
+                # Auto-orient images when web or we're stripping EXIF
+                if medium == :web or version_options[:strip_metadata]
+                  convert_command << " -auto-orient"
+                end
+
                 if scale != :none
                   convert_command << " -resize :resize"
                   convert_options[:resize] = "#{scale_width}x#{scale_height}"
@@ -150,11 +155,6 @@ module Tootsie
                 # Fix CMYK images
                 if medium == :web and original_type =~ /CMYK/
                   convert_command << " -colorspace rgb"
-                end
-
-                # Auto-orient images when web or we're stripping EXIF
-                if medium == :web or version_options[:strip_metadata]
-                  convert_command << " -auto-orient"
                 end
 
                 if original_format == 'gif' and output_format == 'gif'
