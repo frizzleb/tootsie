@@ -29,6 +29,14 @@ module Tootsie
       end
       @logger.info "Starting"
 
+      if @configuration.airbrake_options.respond_to?(:each_pair)
+        Airbrake.configure do |c|
+          @configuration.airbrake_options.each_pair do |key, value|
+            c.send("#{key}=", value)
+          end
+        end
+      end
+
       queue_options = @configuration.queue_options ||= {}
 
       adapter = (queue_options[:adapter] || 'sqs').to_s
@@ -66,7 +74,9 @@ module Tootsie
       begin
         yield
       rescue => exception
-        if @logger.respond_to?(:exception)
+        if Airbrake.configuration.api_key
+          Airbrake.notify_or_ignore(exception)
+        elsif @logger.respond_to?(:exception)
           # This allows us to plug in custom exception handling
           @logger.exception(exception)
         else

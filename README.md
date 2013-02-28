@@ -45,6 +45,7 @@ Dependencies
 
 * Amazon S3 account, for loading and storage of files.
 * AMQP-compliant server (such as RabbitMQ) or Amazon Simple Queue Service for internal task queue management.
+* [Airbrake](https://airbrake.io/pages/home) or [Errbit](https://github.com/errbit/errbit) API keys, for logging exceptions.
 
 Installation
 ------------
@@ -112,8 +113,14 @@ The configuration is a YAML document with the following keys:
 * `queue`:
     * `adapter`: <adapter>
     * ... queue options ...
+* `airbrake`:
+    * ... options for Airbrake ...
 
 The `adapter` key says which queue implementation to use and may be one of `sqs` (Amazon SQS), `amqp` (AMQP, such as RabbitMQ) or `file` (local file system, not recommended except for casual testing).
+
+### Airbrake
+
+To enable [Airbrake](https://airbrake.io/pages/home) reporting (which also works with [Errbit](https://github.com/errbit/errbit)), add each configuration option to the `airbrake` key. Keys include `api_key`, `host` and so on.
 
 ### SQS
 

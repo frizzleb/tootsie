@@ -9,6 +9,7 @@ require 'sqs'
 require 'timeout'
 require 'bunny'
 require 'pebblebed/sinatra'
+require 'airbrake'
 
 require 'tootsie/application'
 require 'tootsie/client'
