@@ -63,7 +63,8 @@ module Tootsie
                 result[:format] = output_format
 
                 # Correct for EXIF orientation
-                if [5, 6, 7, 8].include?(original_orientation)
+                dimensions_rotated = [5, 6, 7, 8].include?(original_orientation)
+                if dimensions_rotated
                   original_width, original_height = original_height, original_width
                 end
 
@@ -75,6 +76,8 @@ module Tootsie
 
                 medium = version_options[:medium]
                 medium &&= medium.to_sym
+
+                auto_orient = (medium == :web || version_options[:strip_metadata])
 
                 new_width, new_height =
                   version_options[:width].try(:to_i),
@@ -122,18 +125,28 @@ module Tootsie
                 end
 
                 # Auto-orient images when web or we're stripping EXIF
-                if medium == :web or version_options[:strip_metadata]
+                if auto_orient
                   convert_command << " -auto-orient"
                 end
 
                 if scale != :none
                   convert_command << " -resize :resize"
-                  convert_options[:resize] = "#{scale_width}x#{scale_height}"
+                  if dimensions_rotated and not auto_orient
+                    # ImageMagick resizing operates on pixel dimensions, not orientation
+                    convert_options[:resize] = "#{scale_height}x#{scale_width}"
+                  else
+                    convert_options[:resize] = "#{scale_width}x#{scale_height}"
+                  end
                 end
                 if version_options[:crop]
                   convert_command << " -gravity center -crop :crop"
                   convert_command << " +repage"  # This fixes some animations
-                  convert_options[:crop] = "#{new_width}x#{new_height}+0+0"
+                  if dimensions_rotated and not auto_orient
+                    # ImageMagick cropping operates on pixel dimensions, not orientation
+                    convert_options[:crop] = "#{new_height}x#{new_width}+0+0"
+                  else
+                    convert_options[:crop] = "#{new_width}x#{new_height}+0+0"
+                  end
                 end
                 if version_options[:strip_metadata]
                   convert_command << " +profile :remove_profiles -set comment ''"
