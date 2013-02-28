@@ -112,13 +112,13 @@ The configuration is a YAML document with the following keys:
 * `worker_count`: Number of workers. Must be at least 1.
 * `queue`:
     * `adapter`: Name of queue implementation to use; one of `sqs` (Amazon SQS), `amqp` (AMQP, such as RabbitMQ) or `file` (local file system, not recommended except for casual testing).
-    * [*queue options*]
+    * *queue options*
 * `airbrake`:
-    * [*options for Airbrake*]
+    * *options for Airbrake*
 
 ### Airbrake
 
-To enable [Airbrake](https://airbrake.io/pages/home) reporting (which also works with [Errbit](https://github.com/errbit/errbit)), add each configuration option under the `airbrake` key. Keys include `api_key`, `host` and so on.
+To enable [Airbrake](https://airbrake.io/pages/home) reporting (which also works with [Errbit](https://github.com/errbit/errbit)), add each configuration option under the `airbrake` key. Keys include `api_key`, `host` and so on. Consult the [`airbrake` gem](https://github.com/airbrake/airbrake) for the full list of configuration keys.
 
 ### SQS
 
