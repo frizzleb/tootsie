@@ -73,7 +73,7 @@ Now create a rackup file, and call it `config.ru`:
     require 'tootsie'
     Tootsie::Application.new.configure!('tootsie.conf')
     map '/api/tootsie/v1' do
-      run Tootsie::WebService
+      run Tootsie::API::V1
     end
 
 To run the web service, you will need a Rack-compatible web server, such as Unicorn. To start Unicorn on port 8080:

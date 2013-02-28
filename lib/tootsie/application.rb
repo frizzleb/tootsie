@@ -2,14 +2,19 @@ module Tootsie
 
   class Application
 
-    def initialize(options = {})
+    def initialize
       @@instance = self
       @logger = Logger.new('/dev/null')
       @configuration = Configuration.new
     end
 
-    def configure!(config_path)
-      @configuration.load_from_file(config_path)
+    def configure!(config_path_or_hash)
+      if config_path_or_hash.respond_to?(:to_str)
+        @configuration.load_from_file(config_path_or_hash)
+      else
+        @configuration.update!(config_path_or_hash)
+      end
+
       case @configuration.log_path
         when 'syslog'
           @logger = SyslogLogger.new('tootsie')
@@ -54,7 +59,13 @@ module Tootsie
 
     class << self
       def get
-        @@instance
+        @@instance ||= Application.new
+      end
+
+      def configure!(config_path_or_hash)
+        app = get
+        app.configure!(config_path_or_hash)
+        app
       end
     end
 

@@ -9,11 +9,19 @@ else
   Bundler.setup(:test)
 end
 
+# Simplecov must be loaded before everything else
+require 'simplecov'
+SimpleCov.add_filter 'spec'
+SimpleCov.add_filter 'config'
+SimpleCov.start
+
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 
 require 'rspec'
 require 'rspec/autorun'
+require 'rack/test'
+require 'webmock/rspec'
 require 'pp'
 require 'tootsie'
 
