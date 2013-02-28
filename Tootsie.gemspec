@@ -7,8 +7,8 @@ Gem::Specification.new do |s|
   s.name        = "tootsie"
   s.version     = Tootsie::VERSION
   s.authors     = ["Alexander Staubo"]
-  s.email       = ["alex@origo.no"]
-  s.homepage    = "http://github.com/alexstaubo/tootsie"
+  s.email       = ["alex@bengler.no"]
+  s.homepage    = "http://github.com/bengler/tootsie"
   s.summary     = s.description = %{Tootsie is a simple audio/video/image transcoding/modification application.}
 
   s.rubyforge_project = "tootsie"
