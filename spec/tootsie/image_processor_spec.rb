@@ -107,7 +107,7 @@ describe ImageProcessor do
       end
     end
 
-    describe 'landscape image, with 270-degree rotation (EXIF orientation 6)' do
+    describe 'landscape image, with 270-degree rotation (EXIF orientation 8)' do
       it 'resizes image, preserving aspect ratio' do
         result, contents = process_image_version('landscape_rotated_270.jpeg',
           {:width => 50, :height => 50}.merge(options))
@@ -169,7 +169,7 @@ describe ImageProcessor do
       end
     end
 
-    describe 'landscape image, with 270-degree rotation (EXIF orientation 6)' do
+    describe 'landscape image, with 270-degree rotation (EXIF orientation 8)' do
       it 'resizes image, preserving aspect ratio' do
         result, contents = process_image_version('landscape_rotated_270.jpeg',
           {:width => 50, :height => 50}.merge(options))
@@ -200,14 +200,76 @@ describe ImageProcessor do
     describe 'portrait image, with 90-degree rotation (EXIF orientation 6)' do
       it 'resizes image, preserving aspect ratio' do
         result, contents = process_image_version('portrait_rotated_90.jpeg',
-          {:width => 50, :height => 50, :scale => :fit})
+          {:width => 50, :height => 50}.merge(options))
         extract_dimensions(contents).should eq [50, 75]
       end
 
       it 'resizes image, preserving aspect ratio when cropping to square' do
         result, contents = process_image_version('portrait_rotated_90.jpeg',
-          {:width => 50, :height => 50, :scale => :fit, :crop => true})
+          {:width => 50, :height => 50, :crop => true}.merge(options))
         extract_dimensions(contents).should eq [50, 50]
+      end
+    end
+  end
+
+  describe 'resizing with scale "up"' do
+    let :options do
+      {:scale => :up}
+    end
+
+    describe 'landscape image' do
+      it 'resizes image, preserving aspect ratio' do
+        result, contents = process_image_version('landscape.jpeg',
+          {:width => 1000, :height => 1000}.merge(options))
+        extract_dimensions(contents).should eq [1000, 667]
+      end
+
+      it 'resizes image, preserving aspect ratio when cropping to square' do
+        result, contents = process_image_version('landscape.jpeg',
+          {:width => 1000, :height => 1000, :crop => true}.merge(options))
+        extract_dimensions(contents).should eq [1000, 667]
+      end
+    end
+
+    describe 'landscape image, with 270-degree rotation (EXIF orientation 8)' do
+      it 'resizes image, preserving aspect ratio' do
+        result, contents = process_image_version('landscape_rotated_270.jpeg',
+          {:width => 1000, :height => 1000}.merge(options))
+        extract_dimensions(contents).should eq [1000, 667]
+      end
+
+      it 'resizes image, preserving aspect ratio when cropping to square' do
+        result, contents = process_image_version('landscape_rotated_270.jpeg',
+          {:width => 1000, :height => 1000, :crop => true}.merge(options))
+        extract_dimensions(contents).should eq [1000, 667]
+      end
+    end
+
+    describe 'portrait image' do
+      it 'resizes image, preserving aspect ratio' do
+        result, contents = process_image_version('portrait.jpeg',
+          {:width => 1000, :height => 1000}.merge(options))
+        extract_dimensions(contents).should eq [667, 1000]
+      end
+
+      it 'resizes image, preserving aspect ratio when cropping to square' do
+        result, contents = process_image_version('portrait.jpeg',
+          {:width => 1000, :height => 1000, :crop => true}.merge(options))
+        extract_dimensions(contents).should eq [667, 1000]
+      end
+    end
+
+    describe 'portrait image, with 90-degree rotation (EXIF orientation 6)' do
+      it 'resizes image, preserving aspect ratio' do
+        result, contents = process_image_version('portrait_rotated_90.jpeg',
+          {:width => 1000, :height => 1000}.merge(options))
+        extract_dimensions(contents).should eq [667, 1000]
+      end
+
+      it 'resizes image, preserving aspect ratio when cropping to square' do
+        result, contents = process_image_version('portrait_rotated_90.jpeg',
+          {:width => 1000, :height => 1000, :crop => true}.merge(options))
+        extract_dimensions(contents).should eq [667, 1000]
       end
     end
   end
