@@ -16,7 +16,7 @@ Tootsie is divided into multiple independent parts:
 
 The API providers a simple way to submit new jobs.
 
-### Job processor
+### Job manager
 
 The job manager accepts new transcoding jobs and executes the. The job manager uses a persistent queue, and supports either local file-based queues (not recommended and mostly suitable for testing), AMQP queues (eg., RabbitMQ) and Amazon Simple Queue Service (aka SQS).
 
