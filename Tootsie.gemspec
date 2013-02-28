@@ -25,7 +25,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'builder', ['~> 2.1.2']
   s.add_runtime_dependency 'mime-types', ['~> 1.16']
   s.add_runtime_dependency 'xml-simple', ['~> 1.0.12']
-  s.add_runtime_dependency 'thin', ['~> 1.2.7']
   s.add_runtime_dependency 's3', ['~> 0.3.8']
   s.add_runtime_dependency 'bunny', ['~> 0.8.0']
   s.add_runtime_dependency 'sqs', ['~> 0.1.2']
