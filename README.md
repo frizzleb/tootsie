@@ -31,7 +31,7 @@ Tootsie can read files via HTTP[S], and can upload data via HTTP[S] POSTs. In ad
 Dependencies
 ------------
 
-* Ruby 1.8.7 or later (1.9.3 recommended).
+* Ruby 1.9.3 or later. (Should work with 1.8.7 still, but the tests require 1.9.3, so no guarantees.)
 * Unix-like system (no Windows support currently).
 * **For video jobs**
   * FFmpeg

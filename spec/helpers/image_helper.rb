@@ -2,7 +2,7 @@ module ImageHelper
 
   def process_image_version(test_file_name, version)
     result, content = nil, nil
-    Tempfile.open("specs") do |file|
+    Tempfile.open("specs", :encoding => 'binary') do |file|
       file.close
 
       version[:target_url] = "file:#{file.path}"
@@ -24,7 +24,7 @@ module ImageHelper
   end
 
   def extract_dimensions(image_data)
-    Tempfile.open("specs") do |file|
+    Tempfile.open("specs", :encoding => 'binary') do |file|
       file << image_data
       file.close
       IO.popen("identify -format '%w %h %[EXIF:Orientation]' '#{file.path}'", 'r') do |f|
