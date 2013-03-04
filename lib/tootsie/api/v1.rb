@@ -30,7 +30,11 @@ module Tootsie
 
       get '/status' do
         queue = Application.get.queue
-        {'queue_count' => queue.count}.to_json
+        out = {}
+        if (count = queue.count)
+          out['queue_count'] = count
+        end
+        out.to_json
       end
 
       private
