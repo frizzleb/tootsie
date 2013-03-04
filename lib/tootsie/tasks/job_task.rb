@@ -79,8 +79,9 @@ module Tootsie
             # TODO: Retry on failure
             @logger.info "Notifying #{notification_url} with message: #{message_json}"
             begin
-              HTTPClient.new.post(notification_url, message_json,
-                'Content-Type' => 'application/json; charset=utf-8')
+              Excon.post(notification_url,
+                :body => message_json,
+                :headers => {'Content-Type' => 'application/json; charset=utf-8'})
             rescue Exception => exception
               @logger.error "Notification failed with exception, ignoring it: #{exception.message}"
             end

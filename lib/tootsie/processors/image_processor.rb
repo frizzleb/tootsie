@@ -10,10 +10,6 @@ module Tootsie
         @extractor = Exiv2MetadataExtractor.new
       end
 
-      def valid?
-        return @input_url && !@versions.blank?
-      end
-
       def params
         return {
           :input_url => @input_url,
@@ -23,17 +19,19 @@ module Tootsie
 
       def execute!(&block)
         result = {:outputs => []}
-        input, output = Input.new(@input_url), nil
+
+        input, output = Resources.parse_uri(@input_url), nil
         begin
-          input.get!
+          input.open
           begin
             versions.each_with_index do |version_options, version_index|
               version_options = version_options.with_indifferent_access
               @logger.info("Handling version: #{version_options.inspect}")
 
-              output = Output.new(version_options[:target_url])
+              output = Resources.parse_uri(version_options[:target_url])
+              output.open('w')
               begin
-                result[:metadata] ||= @extractor.extract_from_file(input.file_name)
+                result[:metadata] ||= @extractor.extract_from_file(input.file.path)
 
                 original_depth = nil
                 original_width = nil
@@ -42,7 +40,7 @@ module Tootsie
                 original_format = nil
                 original_orientation = nil
                 CommandRunner.new("identify -format '%z %w %h %m %[EXIF:Orientation] %r' :file").
-                  run(:file => input.file_name) do |line|
+                  run(:file => input.file.path) do |line|
                   if line =~ /(\d+) (\d+) (\d+) ([^\s]+) (\d+)? (.+)/
                     original_depth, original_width, original_height = $~[1, 3].map(&:to_i)
                     original_format = $4.downcase
@@ -114,8 +112,8 @@ module Tootsie
 
                 convert_command = "convert"
                 convert_options = {
-                  :input_file => input.file_name,
-                  :output_file => "'#{output_format}:#{output.file_name}'"
+                  :input_file => input.file.path,
+                  :output_file => "'#{output_format}:#{output.file.path}'"
                 }
 
                 if original_format != version_options[:format] and %(gif tiff).include?(original_format)
@@ -181,7 +179,7 @@ module Tootsie
                 CommandRunner.new(convert_command).run(convert_options)
 
                 if version_options[:format] == 'png' and Pngcrush.available?
-                  Pngcrush.process!(output.file_name)
+                  Pngcrush.process!(output.file.path)
                 end
 
                 output.content_type = version_options[:content_type] if version_options[:content_type]
@@ -190,8 +188,9 @@ module Tootsie
                   when 'png' then 'image/png'
                   when 'gif' then 'image/gif'
                 end
-                output.put!
-                result[:outputs] << {:url => output.result_url}
+                output.save
+
+                result[:outputs] << {:url => output.public_url}
               ensure
                 output.close
               end

@@ -11,7 +11,7 @@ module Tootsie
 
       def execute!
         Application.get.logger.info "Notifying #{@url} with message: #{@message.inspect}"
-        HTTPClient.new.post(@url, @message)
+        Excon.post(@url, :body => @message)
       end
 
       def attributes

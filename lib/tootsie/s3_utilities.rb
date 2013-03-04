@@ -9,7 +9,8 @@ module Tootsie
           output[:bucket], output[:key], option_string = $1, $2, $3
           unless option_string.blank?
             option_string.split('&').map { |pair| pair.scan(/^(.*?)=(.*)$/)[0] }.each do |k, v|
-              output[k] = v.to_sym
+              v = v.to_sym if v =~ /\A[a-zA-Z_]+\Z/
+              output[k] = v
             end
           end
           output

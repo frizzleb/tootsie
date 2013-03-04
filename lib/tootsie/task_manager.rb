@@ -1,7 +1,3 @@
-require 'httpclient'
-require 'uri'
-require 'benchmark'
-
 module Tootsie
 
   class TaskManager

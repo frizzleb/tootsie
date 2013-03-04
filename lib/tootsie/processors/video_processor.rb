@@ -6,20 +6,16 @@ module Tootsie
     class VideoProcessor
 
       def initialize(params = {})
-        @input_url = params[:input_url]
+        @input = Resources.parse_uri(params[:input_url])
         @thumbnail_options = (params[:thumbnail] || {}).with_indifferent_access
         @versions = [params[:versions] || {}].flatten
         @thread_count = Application.get.configuration.ffmpeg_thread_count
         @logger = Application.get.logger
       end
 
-      def valid?
-        return @input_url && !@versions.blank?
-      end
-
       def params
         return {
-          :input_url => @input_url,
+          :input_url => @input.url,
           :thumbnail => @thumbnail_options,
           :versions => @versions
         }
@@ -27,24 +23,26 @@ module Tootsie
 
       def execute!(&block)
         result = {:urls => []}
-        input, output, thumbnail_output = Input.new(@input_url), nil, nil
+        output, thumbnail_output = nil, nil
         begin
-          input.get!
+          @input.open
           begin
             versions.each_with_index do |version_options, version_index|
               version_options = version_options.with_indifferent_access
 
               if version_index == 0 and @thumbnail_options[:target_url]
-                thumbnail_output = Output.new(@thumbnail_options[:target_url])
+                thumbnail_output = Resources.parse_uri(@thumbnail_options[:target_url])
               else
                 thumbnail_output = nil
               end
               begin
-                output = Output.new(version_options[:target_url])
+                output = Resources.parse_uri(version_options[:target_url])
                 begin
+                  output.open('w')
+
                   if version_options[:strip_metadata]
                     # This actually strips in-place, so no need to swap streams
-                    CommandRunner.new("id3v2 --delete-all '#{input.file_name}'").run do |line|
+                    CommandRunner.new("id3v2 --delete-all '#{@input.file.path}'").run do |line|
                       if line.present? and line !~ /\AStripping id3 tag in.*stripped\./
                         @logger.warn "ID3 stripping failed, ignoring: #{line}"
                       end
@@ -54,7 +52,9 @@ module Tootsie
                   adapter_options = version_options.dup
                   adapter_options.delete(:target_url)
                   if thumbnail_output
-                    adapter_options[:thumbnail] = @thumbnail_options.merge(:filename => thumbnail_output.file_name)
+                    thumbnail_output.open('w')
+                    adapter_options[:thumbnail] = @thumbnail_options.merge(
+                      :filename => thumbnail_output.file.path)
                   else
                     adapter_options.delete(:thumbnail)
                   end
@@ -65,26 +65,26 @@ module Tootsie
                       yield(:progress => (seconds + (total_seconds * version_index)) / (total_seconds * versions.length).to_f)
                     }
                   end
-                  adapter.transcode(input.file_name, output.file_name, adapter_options)
+                  adapter.transcode(@input.file.path, output.file.path, adapter_options)
 
                   output.content_type = version_options[:content_type] if version_options[:content_type]
-                  output.put!
+                  output.save
 
-                  result[:urls].push output.result_url
+                  result[:urls].push output.public_url
                 ensure
                   output.close
                 end
                 if thumbnail_output
-                  thumbnail_output.put!
-                  result[:thumbnail_url] = thumbnail_output.result_url
+                  thumbnail_output.save
+                  result[:thumbnail_url] = thumbnail_output.public_url
                 end
               ensure
-                thumbnail_output.close if thumbnail_output
+                thumbnail_output.try(:close)
               end
             end
           end
         ensure
-          input.close
+          @input.close
         end
         result
       end

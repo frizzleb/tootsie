@@ -1,7 +1,3 @@
-require 'json'
-require 'sqs'
-require 'timeout'
-
 module Tootsie
 
   class SqsQueueCouldNotFindQueueError < Exception; end

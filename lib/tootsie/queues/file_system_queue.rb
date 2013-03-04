@@ -1,7 +1,3 @@
-require 'json'
-require 'tempfile'
-require 'fileutils'
-
 module Tootsie
 
   # A simple, naive queue implementation that stores items as JSON files
