@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'json', ['~> 1.7']
   s.add_runtime_dependency 'sinatra', ['~> 1.2']
   s.add_runtime_dependency 'activesupport', ['~> 3.2.0']
-  s.add_runtime_dependency 'excon', ['~> 0.16.10']  # Pinned to old version for WebMock compatibility
+  s.add_runtime_dependency 'excon', ['~> 0.19']
   s.add_runtime_dependency 'builder', ['~> 2.1']
   s.add_runtime_dependency 'mime-types', ['~> 1.16']
   s.add_runtime_dependency 'xml-simple', ['~> 1.0']
@@ -38,5 +38,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake"
   s.add_development_dependency "simplecov"
   s.add_development_dependency "rack-test"
-  s.add_development_dependency "webmock"
+  s.add_development_dependency "webmock", ">= 1.11"
 end
