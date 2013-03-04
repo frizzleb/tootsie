@@ -25,7 +25,7 @@ module Tootsie
           halt 400, 'Invalid job specification'
         end
         Application.get.task_manager.schedule(job)
-        201
+        halt 201, "Job saved."
       end
 
       get '/status' do
