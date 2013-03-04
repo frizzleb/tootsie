@@ -22,6 +22,7 @@ module Tootsie
               case response.status
                 when 200
                   @content_type = response.headers['Content-Type']
+                  @temp_file ||= Tempfile.open('tootsie')  # In case of empty stream
                   @temp_file.seek(0)
                   break
                 when 301, 302
