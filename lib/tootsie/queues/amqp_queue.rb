@@ -12,8 +12,12 @@ module Tootsie
     end
 
     def count
-      if @queue && (status = @queue.status)
-        status[:message_count]
+      with_connection do
+        if @queue && (status = @queue.status)
+          status[:message_count]
+        else
+          nil
+        end
       end
     end
 
