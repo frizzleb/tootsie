@@ -54,6 +54,8 @@ module Tootsie
             :max_backoff => queue_options[:max_backoff])
         when 'file'
           @queue = Tootsie::FileSystemQueue.new(queue_options[:root])
+        when 'null'
+          @queue = Tootsie::NullQueue.new
         else
           raise 'Invalid queue configuration'
       end
