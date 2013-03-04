@@ -10,7 +10,6 @@ module ImageHelper
       proc = ImageProcessor.new(
         :input_url => test_file_url(test_file_name),
         :versions => [version])
-      proc.valid?.should eq true
 
       result = proc.execute!
       result.should have_key(:outputs)
