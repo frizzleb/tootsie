@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    tootsie (0.10)
+    tootsie (0.11)
       activesupport (~> 3.2.0)
       airbrake (~> 3.1)
       builder (~> 2.1)
