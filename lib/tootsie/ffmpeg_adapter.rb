@@ -44,7 +44,11 @@ module Tootsie
         arguments['b'] = options[:video_bitrate] if options[:video_bitrate]
         arguments['r'] = options[:video_frame_rate] if options[:video_frame_rate]
         arguments['s'] = "#{options[:width]}x#{options[:height]}" if options[:width] or options[:height]
-        arguments['sameq'] = true
+
+        quality = options[:quality].try(:to_f)
+        quality ||= 1.0
+        quality = [[quality, 1.0].min, 0.0].max
+        arguments['qscale'] = 1 + (1 - quality) * 30  # 1..31
       end
       arguments['f'] = options[:format] if options[:format]
 

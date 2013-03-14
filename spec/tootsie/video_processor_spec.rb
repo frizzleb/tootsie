@@ -20,6 +20,7 @@ describe VideoProcessor do
         :format => "flv",
         :width => 600,
         :height => 400,
+        :quality => 1.0,
         :content_type => "video/x-flv")
       File.open(out_path, "w") { |f|
         f.write("DATA")
@@ -42,6 +43,7 @@ describe VideoProcessor do
           :format => 'flv',
           :width => 600,
           :height => 400,
+          :quality => 1.0,
           :content_type => "video/x-flv"
         }
       ]).execute!

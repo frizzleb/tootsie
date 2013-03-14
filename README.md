@@ -206,6 +206,7 @@ Video jobs have the `type` key set to either `video`, `audio`. Currently, `audio
     * `video_codec`: video codec name, eg. `mp4`.
     * `width`: desired video frame width in pixels.
     * `height`: desired video frame height in pixels.
+    * `quality`: A quality value between 0.0 (low quality, low size) and 1.0 (high quality, large size) which will be translated to a compression level depending on the output coding. The default is 1.0.
     * `format`: File format.
     * `content_type`: Content type of resultant file. Tootsie will not be able to guess this at the moment.
     * `strip_metadata`: If true, metadata such as ID3 will be deleted. Since recent ffmpeg versions have issues with ID3 tags and character encodings, this is recommended for audio files. Requires `id3v2` tool.
@@ -215,6 +216,10 @@ Completion notification provides the following data:
 * `outputs` contains an array of results. Each is a hash with the following keys:
     * `url`: the completed file.
     * `metadata`: image metadata as a hash. These are raw EXIF and IPTC data from ImageMagick.
+
+#### Quality setting
+
+The `quality` setting is an abstraction of the ffmpeg `-qscale` option. Tootsie maps to a static scale between 1 and 31. This yields constant quality with a variable bitrate (VBR).
 
 ### Image transcoding jobs
 
