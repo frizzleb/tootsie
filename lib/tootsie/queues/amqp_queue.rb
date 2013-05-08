@@ -70,10 +70,7 @@ module Tootsie
           result = yield
         rescue Bunny::ServerDownError, Bunny::ConnectionError, Bunny::ProtocolError => e
           @logger.error "Error in AMQP server connection (#{e.class}: #{e}), retrying"
-          if @connection
-            @connection.close rescue nil
-            @connection = nil
-          end
+          reset_connection
           sleep(0.5)
           retry
         else
@@ -95,19 +92,33 @@ module Tootsie
 
       def connect!
         begin
-          @logger.info "Connecting to AMQP server on #{@host_name}"
           unless @connection
+            @logger.info "Connecting to AMQP server on #{@host_name}"
             @connection = Bunny.new(:host => @host_name)
             @connection.start
           end
 
-          @exchange = @connection.exchange('')
+          unless @exchange
+            @exchange = @connection.exchange('')
+          end
 
-          @queue = @connection.queue(@queue_name, :durable => true)
-        rescue Bunny::ServerDownError
+          unless @queue
+            @queue = @connection.queue(@queue_name, :durable => true)
+          end
+        rescue Bunny::ServerDownError => e
+          @logger.error "Could not connect: #{e}"
           sleep(0.5)
           retry
         end
+      end
+
+      def reset_connection
+        if @connection
+          @connection.close rescue nil
+          @connection = nil
+        end
+        @queue = nil
+        @exchange = nil
       end
 
   end
