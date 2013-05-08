@@ -15,18 +15,22 @@ module Tootsie
         @configuration.update!(config_path_or_hash)
       end
 
-      case @configuration.log_path
-        when 'syslog'
-          @logger = SyslogLogger.new('tootsie')
-        when String
-          @logger = Logger.new(@configuration.log_path)
-        else
-          if defined?(LOGGER)
-            @logger = LOGGER  # Can be set externally to default to a global logger
+      if defined?(LOGGER)
+        @logger = LOGGER  # Can be set externally to default to a global logger
+        if @configuration.log_path
+          @logger.warn "Logger overridden, ignoring configuration log path"
+        end
+      else
+        case @configuration.log_path
+          when 'syslog'
+            @logger = SyslogLogger.new('tootsie')
+          when String
+            @logger = Logger.new(@configuration.log_path)
           else
             @logger = Logger.new($stderr)
-          end
+        end
       end
+
       @logger.info "Starting"
 
       if @configuration.airbrake_options.respond_to?(:each_pair)
