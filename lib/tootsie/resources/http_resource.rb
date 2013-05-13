@@ -16,13 +16,14 @@ module Tootsie
               response = Excon.get(uri,
                 :headers => {'Accept' => '*/*'},
                 :response_block => proc { |chunk, remaining_bytes, total_bytes|
-                  @temp_file = Tempfile.open('tootsie')
+                  @temp_file ||= make_temp_file
                   @temp_file.write(chunk)
                 })
               case response.status
                 when 200
                   @content_type = response.headers['Content-Type']
-                  @temp_file ||= Tempfile.open('tootsie')  # In case of empty stream
+                  @temp_file ||= make_temp_file  # In case of empty stream
+                  @temp_file.flush
                   @temp_file.seek(0)
                   break
                 when 301, 302
@@ -42,7 +43,7 @@ module Tootsie
             end
           when 'w'
             close
-            @temp_file = Tempfile.open('tootsie')
+            @temp_file = make_temp_file
           else
             raise ArgumentError, "Invalid mode: #{mode.inspect}"
         end
@@ -79,6 +80,16 @@ module Tootsie
       alias_method :public_url, :url
 
       attr_accessor :content_type
+
+      private
+
+        def make_temp_file
+          unless @temp_file
+            @temp_file = Tempfile.open('tootsie')
+            @temp_file.unlink
+          end
+          @temp_file
+        end
 
     end
 
