@@ -16,3 +16,8 @@ Tootsie::Application.configure!(config_path)
 map '/api/tootsie/v1' do
   run Tootsie::API::V1
 end
+
+# Old API location, for backwards compatibility.
+map '/' do
+  run Tootsie::API::V1
+end
