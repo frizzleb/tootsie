@@ -9,7 +9,11 @@ module Tootsie
       @ffmpeg_binary = 'ffmpeg'
       @ffmpeg_arguments = {}
       @ffmpeg_arguments['threads'] = (options[:thread_count] || 1)
-      @ffmpeg_arguments['v'] = 1
+
+      # ffmpeg only requires level 1 to get stream info, but libav's ffmpeg
+      # tool requires a higher level.
+      @ffmpeg_arguments['v'] = 99
+
       # TODO: This will cause some streams to abort when they contain just a
       #   few corrupt frames. Disabling for now.
       #@ffmpeg_arguments['xerror'] = true
