@@ -49,7 +49,7 @@ module Tootsie
             raise CommandExecutionFailed, "Command failed with exit code #{status.exitstatus}: #{command_line}"
           end
         end
-        @logger.info "Command took #{'%.3f' % (elapsed_time * 1000)} seconds"
+        @logger.info "Command took #{'%.3f' % elapsed_time} seconds"
       elsif status.stopped?
         raise CommandExecutionFailed, "Command stopped unexpectedly with signal #{status.stopsig}: #{command_line}"
       elsif status.signaled?
