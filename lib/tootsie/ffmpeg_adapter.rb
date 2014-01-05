@@ -52,6 +52,10 @@ module Tootsie
         arguments['b'] = options[:video_bitrate] if options[:video_bitrate]
         arguments['r'] = options[:video_frame_rate] if options[:video_frame_rate]
         arguments['s'] = "#{options[:width]}x#{options[:height]}" if options[:width] or options[:height]
+        
+        arguments['vf'] = "subtitles=#{input_filename}" if options[:burn_subs]
+        
+        arguments['map'] = options[:maps] if options[:burn_subs]
 
         quality = options[:quality].try(:to_f)
         quality ||= 1.0
@@ -108,8 +112,8 @@ module Tootsie
         end
       end
 
-      thumbnail_options = options[:thumbnail]
-      if thumbnail_options
+      thumbnails = options[:thumbnail]
+      if thumbnails.each do |thumbnail_options|
         thumb_width = thumbnail_options[:width].try(:to_i) || options[:width].try(:to_i)
         thumb_height = thumbnail_options[:height].try(:to_i) || options[:height].try(:to_i)
         if not thumbnail_options[:force_aspect_ratio] and result_width and result_height
