@@ -113,7 +113,7 @@ module Tootsie
       end
 
       thumbnails = options[:thumbnail]
-      if thumbnails.each do |thumbnail_options|
+      thumbnails.each do |thumbnail_options|
         thumb_width = thumbnail_options[:width].try(:to_i) || options[:width].try(:to_i)
         thumb_height = thumbnail_options[:height].try(:to_i) || options[:height].try(:to_i)
         if not thumbnail_options[:force_aspect_ratio] and result_width and result_height
