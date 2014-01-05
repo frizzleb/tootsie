@@ -43,7 +43,7 @@ module Tootsie
         case options[:video_codec].try(:to_s)
           when 'h264'
             arguments['vcodec'] = 'libx264'
-            arguments['vpre'] = ['medium', 'main']  # TODO: Allow override
+            arguments['preset'] = ['medium', 'main']  # TODO: Allow override
             arguments['crf'] = 15                   # TODO: Allow override
             arguments['threads'] = 0
           when String
