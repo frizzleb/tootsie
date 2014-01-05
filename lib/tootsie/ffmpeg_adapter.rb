@@ -55,7 +55,7 @@ module Tootsie
         
         arguments['vf'] = "subtitles=#{input_filename}" if options[:burn_subs]
         
-        arguments['map'] = options[:maps] if options[:burn_subs]
+        arguments['map'] = options[:maps] if options[:maps]
 
         quality = options[:quality].try(:to_f)
         quality ||= 1.0
